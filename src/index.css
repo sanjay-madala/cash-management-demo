@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+  /* SAP Fiori Color Tokens */
+  --color-shell: #354A5F;
+  --color-shell-light: #4A6584;
+  --color-brand: #0A6ED1;
+  --color-brand-hover: #0854A0;
+  --color-positive: #2B7D2B;
+  --color-negative: #BB0000;
+  --color-critical: #E9730C;
+  --color-neutral: #6A6D70;
+  --color-informative: #0A6ED1;
+
+  /* Background tokens */
+  --color-bg-primary: #F7F7F7;
+  --color-bg-secondary: #FFFFFF;
+  --color-bg-shell: #354A5F;
+
+  /* Text tokens */
+  --color-text-primary: #32363A;
+  --color-text-secondary: #6A6D70;
+  --color-text-inverse: #FFFFFF;
+
+  /* Border */
+  --color-border: #E5E5E5;
+  --color-border-active: #0A6ED1;
+
+  /* Font */
+  --font-sans: '72', 'Segoe UI', 'Noto Sans Thai', system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
