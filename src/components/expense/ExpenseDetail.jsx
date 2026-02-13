@@ -118,6 +118,14 @@ export default function ExpenseDetail() {
               <div><span className="text-text-secondary">{t('expense.travelDate')}:</span> <span className="font-medium ml-1">{formatDate(record.travelDate, i18n.language)}</span></div>
               {record.companions && <div><span className="text-text-secondary">{t('expense.companions')}:</span> <span className="font-medium ml-1">{record.companions}</span></div>}
               {record.remarks && <div className="col-span-2"><span className="text-text-secondary">{t('expense.remarks')}:</span> <span className="font-medium ml-1">{record.remarks}</span></div>}
+              {record.advanceId && (
+                <div>
+                  <span className="text-text-secondary">{t('expense.linkedAdvance')}:</span>
+                  <button onClick={() => navigate(`/advance/${record.advanceId}`)} className="font-medium ml-1 text-brand hover:underline">
+                    {record.advanceId}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

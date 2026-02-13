@@ -165,8 +165,7 @@ export function DataProvider({ children }) {
       pending(state.advances) +
       pending(state.payments) +
       pending(state.expenses) +
-      pending(state.pettyCash) +
-      pending(state.reconciliations)
+      pending(state.pettyCash)
     );
   }, [state]);
 

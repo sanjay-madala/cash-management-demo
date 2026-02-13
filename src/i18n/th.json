@@ -78,7 +78,7 @@
     "specificAdvance": "เงินทดรองเฉพาะกิจ",
     "cashReceiver": "ผู้รับเงินสด",
     "cashHolder": "ผู้ถือเงินสด",
-    "requiredDate": "วันที่ต้องการ",
+    "requiredDate": "วันที่ต้องการรับเงินทดรอง",
     "lineItems": "รายการ",
     "description": "รายละเอียด",
     "vat": "ภาษีมูลค่าเพิ่ม",
@@ -165,7 +165,10 @@
     "certification": "ค่าใบรับรอง",
     "preview": "ตรวจสอบ",
     "next": "ถัดไป",
-    "previous": "ก่อนหน้า"
+    "previous": "ก่อนหน้า",
+    "selectAdvance": "เลือกใบขอเบิกเงินทดรอง",
+    "noAdvance": "ไม่มีเงินทดรอง (เบิกตรง)",
+    "linkedAdvance": "เงินทดรองที่เชื่อมโยง"
   },
   "pettyCash": {
     "title": "เงินสดย่อย",
@@ -211,7 +214,9 @@
     "returnMethod": "วิธีการคืนเงิน",
     "step1": "เลือกเงินทดรอง",
     "step2": "บันทึกค่าใช้จ่าย",
-    "step3": "ตรวจสอบและส่ง"
+    "step3": "ตรวจสอบและส่ง",
+    "accountingOnly": "การกระทบยอดดำเนินการโดยฝ่ายบัญชี",
+    "noAdvancesToReconcile": "ไม่มีเงินทดรองที่รอการกระทบยอด"
   },
   "sap": {
     "documentLog": "บันทึกเอกสาร SAP",

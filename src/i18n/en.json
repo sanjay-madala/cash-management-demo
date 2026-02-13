@@ -78,7 +78,7 @@
     "specificAdvance": "Specific Advance",
     "cashReceiver": "Cash Receiver",
     "cashHolder": "Cash Holder",
-    "requiredDate": "Required Date",
+    "requiredDate": "Expected Advance Date",
     "lineItems": "Line Items",
     "description": "Description",
     "vat": "VAT",
@@ -165,7 +165,10 @@
     "certification": "Certification",
     "preview": "Preview",
     "next": "Next",
-    "previous": "Previous"
+    "previous": "Previous",
+    "selectAdvance": "Select Advance Request",
+    "noAdvance": "No Advance (Standalone)",
+    "linkedAdvance": "Linked Advance"
   },
   "pettyCash": {
     "title": "Petty Cash",
@@ -211,7 +214,9 @@
     "returnMethod": "Return Method",
     "step1": "Select Advance",
     "step2": "Record Expenses",
-    "step3": "Review & Submit"
+    "step3": "Review & Submit",
+    "accountingOnly": "Reconciliation is handled by Accounting department.",
+    "noAdvancesToReconcile": "No advances pending reconciliation."
   },
   "sap": {
     "documentLog": "SAP Document Log",

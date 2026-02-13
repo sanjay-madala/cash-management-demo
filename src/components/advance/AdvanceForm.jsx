@@ -9,6 +9,8 @@ import { USERS } from '../../data/users.js';
 import { generateId } from '../../utils/formatters.js';
 
 const ADVANCE_TYPES = [
+  { id: 'weekly', labelKey: 'advance.weekly' },
+  { id: 'general', labelKey: 'advance.general' },
   { id: 'site', labelKey: 'advance.siteAdvance' },
   { id: 'driver', labelKey: 'advance.driverAdvance' },
   { id: 'specific', labelKey: 'advance.specificAdvance' },

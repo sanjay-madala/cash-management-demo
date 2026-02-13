@@ -22,6 +22,13 @@ export default function ExpenseForm() {
   const TRAVEL_EXPENSE_TYPES = ['fuel', 'toll', 'transportMileage', 'parking'];
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [selectedAdvanceId, setSelectedAdvanceId] = useState(editRecord?.advanceId || '');
+
+  // Filter advances: only disbursed advances belonging to current user
+  const availableAdvances = (state.advances || []).filter(
+    (a) => a.requesterId === currentUser?.id && a.status === 'disbursed'
+  );
+  const selectedAdvance = availableAdvances.find((a) => a.id === selectedAdvanceId) || null;
 
   const [step1, setStep1] = useState({
     company: currentUser?.company || 'comp-1',
@@ -53,6 +60,8 @@ export default function ExpenseForm() {
         companions: editRecord.companions || '',
         remarks: editRecord.remarks || '',
       });
+
+      setSelectedAdvanceId(editRecord.advanceId || '');
 
       if (editRecord.lineItems && editRecord.lineItems.length > 0) {
         const travelItems = editRecord.lineItems.filter((li) => TRAVEL_EXPENSE_TYPES.includes(li.expenseType));
@@ -126,9 +135,11 @@ export default function ExpenseForm() {
         travelPurpose: step1.travelPurpose,
         companions: step1.companions,
         remarks: step1.remarks,
+        advanceId: selectedAdvance ? selectedAdvance.id : null,
+        advanceAmount: selectedAdvance ? selectedAdvance.totalAmount : 0,
         lineItems: allLineItems,
         totalAmount,
-        netSettlement: totalAmount,
+        netSettlement: selectedAdvance ? totalAmount - selectedAdvance.totalAmount : totalAmount,
         status: asDraft ? 'draft' : 'pendingApproval',
         approvals: asDraft
           ? (editRecord.approvals || [])
@@ -152,11 +163,11 @@ export default function ExpenseForm() {
         companions: step1.companions,
         createdDate: now.split('T')[0],
         status: asDraft ? 'draft' : 'pendingApproval',
-        advanceId: null,
-        advanceAmount: 0,
+        advanceId: selectedAdvance ? selectedAdvance.id : null,
+        advanceAmount: selectedAdvance ? selectedAdvance.totalAmount : 0,
         lineItems: allLineItems,
         totalAmount,
-        netSettlement: totalAmount,
+        netSettlement: selectedAdvance ? totalAmount - selectedAdvance.totalAmount : totalAmount,
         remarks: step1.remarks,
         approvals: asDraft ? [] : [{ userId: currentUser?.id || 'user-03', action: 'submitted', date: now, comment: '' }],
       };
@@ -198,6 +209,34 @@ export default function ExpenseForm() {
       {/* Step 1: Travel Approval */}
       {currentStep === 0 && (
         <div className="bg-bg-secondary rounded-lg border border-border p-6">
+          {/* Advance Selection */}
+          <div className="mb-6">
+            <label className={labelClass}>{t('expense.selectAdvance')}</label>
+            <select
+              value={selectedAdvanceId}
+              onChange={(e) => setSelectedAdvanceId(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">{t('expense.noAdvance')}</option>
+              {availableAdvances.map((adv) => (
+                <option key={adv.id} value={adv.id}>
+                  {adv.docNumber} - {adv.totalAmount?.toLocaleString('en-US', { minimumFractionDigits: 2 })} THB - {adv.purpose || adv.travelPurpose || ''}
+                </option>
+              ))}
+            </select>
+            {selectedAdvance && (
+              <div className="mt-3 p-3 bg-brand/5 border border-brand/20 rounded-lg text-sm">
+                <div className="font-semibold text-brand mb-1">{selectedAdvance.docNumber}</div>
+                <div className="grid grid-cols-2 gap-1 text-text-secondary">
+                  <span>{t('common.amount')}:</span>
+                  <span className="font-mono font-medium text-text-primary">{selectedAdvance.totalAmount?.toLocaleString('en-US', { minimumFractionDigits: 2 })} THB</span>
+                  <span>{t('expense.travelPurpose')}:</span>
+                  <span className="text-text-primary">{selectedAdvance.purpose || selectedAdvance.travelPurpose || '-'}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
           <h2 className="text-sm font-semibold text-text-primary mb-4">{t('expense.step1Title')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
