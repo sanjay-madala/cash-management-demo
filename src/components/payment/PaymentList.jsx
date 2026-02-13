@@ -18,17 +18,25 @@ const ALL_STATUSES = ['draft', 'pendingApproval', 'approved', 'disbursed', 'post
 export default function PaymentList() {
   const { t, i18n } = useTranslation();
   const { state } = useData();
-  const { currentRole } = useAuth();
+  const { currentRole, currentUser } = useAuth();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
   const filtered = useMemo(() => {
     let items = state.payments;
+    // Role-based filtering
+    if (currentRole === 'employee') {
+      items = items.filter((r) => r.requesterId === currentUser?.id);
+    } else if (currentRole === 'manager') {
+      items = items.filter((r) => ['pendingApproval', 'approved', 'disbursed', 'posted'].includes(r.status));
+    } else if (currentRole === 'accounting') {
+      items = items.filter((r) => ['approved', 'disbursed', 'posted'].includes(r.status));
+    }
     items = filterByStatus(items, statusFilter);
     items = filterBySearch(items, search, ['docNumber', 'payee', 'paymentDetails']);
     return items;
-  }, [state.payments, search, statusFilter]);
+  }, [state.payments, search, statusFilter, currentRole, currentUser]);
 
   const getUser = (id) => USERS.find((u) => u.id === id);
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText } from 'lucide-react';
+import { ArrowLeft, FileText, Pencil, CheckCircle } from 'lucide-react';
 import { useData } from '../../context/DataContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useSAP } from '../../context/SAPContext.jsx';
@@ -38,23 +38,46 @@ export default function AdvanceDetail() {
   }
 
   const requester = USERS.find((u) => u.id === record.requesterId);
+  const cashReceiver = USERS.find((u) => u.id === record.cashReceiverId);
+  const cashHolder = USERS.find((u) => u.id === record.cashHolderId);
   const company = COMPANIES.find((c) => c.id === record.companyId);
   const bank = BANKS.find((b) => b.id === record.bankId);
 
+  // Count current approvals (excluding submitted, received, etc.)
+  const approvalCount = (record.approvals || []).filter((a) => a.action === 'approved').length;
+  const requiredApprovals = record.requiredApprovals || 1;
+
   const canApprove = currentRole === 'manager' && record.status === 'pendingApproval';
+  const canAccountingReject = currentRole === 'accounting' && (record.status === 'approved' || record.status === 'pendingApproval');
   const canDisburse = currentRole === 'accounting' && record.status === 'approved';
   const canPostSAP = currentRole === 'accounting' && (record.status === 'approved' || record.status === 'disbursed') && !sapDoc;
+  const canEdit =
+    currentRole === 'employee' &&
+    record.requesterId === currentUser?.id &&
+    (record.status === 'draft' || record.status === 'returned' || record.status === 'rejected');
+  const canConfirmReceipt =
+    currentRole === 'employee' &&
+    record.status === 'disbursed' &&
+    record.cashReceiverId === currentUser?.id &&
+    !(record.approvals || []).some((a) => a.action === 'received');
 
   const handleApprove = () => {
     const now = new Date().toISOString();
     dispatch({ type: 'ADD_APPROVAL', module: 'advance', id, approval: { userId: currentUser.id, action: 'approved', date: now, comment: 'Approved' } });
-    dispatch({ type: 'UPDATE_STATUS', module: 'advance', id, status: 'approved' });
+    if (approvalCount + 1 >= requiredApprovals) {
+      dispatch({ type: 'UPDATE_STATUS', module: 'advance', id, status: 'approved' });
+    }
   };
 
   const handleReject = () => {
     const now = new Date().toISOString();
     dispatch({ type: 'ADD_APPROVAL', module: 'advance', id, approval: { userId: currentUser.id, action: 'rejected', date: now, comment: rejectComment } });
-    dispatch({ type: 'UPDATE_STATUS', module: 'advance', id, status: 'rejected' });
+    if (currentRole === 'accounting') {
+      // Accounting rejects back to recent approver
+      dispatch({ type: 'UPDATE_STATUS', module: 'advance', id, status: 'pendingApproval' });
+    } else {
+      dispatch({ type: 'UPDATE_STATUS', module: 'advance', id, status: 'rejected' });
+    }
     setRejectModalOpen(false);
     setRejectComment('');
   };
@@ -63,6 +86,11 @@ export default function AdvanceDetail() {
     const now = new Date().toISOString();
     dispatch({ type: 'ADD_APPROVAL', module: 'advance', id, approval: { userId: currentUser.id, action: 'disbursed', date: now, comment: 'Disbursed' } });
     dispatch({ type: 'UPDATE_STATUS', module: 'advance', id, status: 'disbursed' });
+  };
+
+  const handleConfirmReceipt = () => {
+    const now = new Date().toISOString();
+    dispatch({ type: 'ADD_APPROVAL', module: 'advance', id, approval: { userId: currentUser.id, action: 'received', date: now, comment: 'Cash received' } });
   };
 
   const handlePostSAP = async () => {
@@ -74,9 +102,11 @@ export default function AdvanceDetail() {
     setPostSuccess(`Document ${result.documentNumber} posted successfully in Company Code ${result.companyCode}, Fiscal Year ${result.fiscalYear}`);
   };
 
-  const requesterName = requester
-    ? (i18n.language === 'th' ? `${requester.firstName} ${requester.lastName}` : `${requester.firstNameEn} ${requester.lastNameEn}`)
-    : '-';
+  const getName = (user) => {
+    if (!user) return '-';
+    return i18n.language === 'th' ? `${user.firstName} ${user.lastName}` : `${user.firstNameEn} ${user.lastNameEn}`;
+  };
+
   const companyName = company ? (i18n.language === 'th' ? company.name.th : company.name.en) : '-';
   const bankName = bank ? (i18n.language === 'th' ? bank.name.th : bank.name.en) : '-';
 
@@ -95,6 +125,16 @@ export default function AdvanceDetail() {
           <p className="text-sm text-text-secondary mt-0.5">{record.purpose}</p>
         </div>
         <div className="flex gap-2">
+          {canEdit && (
+            <button onClick={() => navigate(`/advance/new?edit=${record.id}`)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-brand border border-brand rounded-lg hover:bg-brand/5 transition-colors">
+              <Pencil size={14} /> {t('common.edit')}
+            </button>
+          )}
+          {canConfirmReceipt && (
+            <button onClick={handleConfirmReceipt} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-positive text-white rounded-lg hover:bg-positive/90 transition-colors">
+              <CheckCircle size={14} /> {t('advance.confirmReceipt')}
+            </button>
+          )}
           {canApprove && (
             <>
               <button onClick={handleApprove} className="px-4 py-2 text-sm font-medium bg-positive text-white rounded-lg hover:bg-positive/90 transition-colors">
@@ -104,6 +144,11 @@ export default function AdvanceDetail() {
                 {t('common.reject')}
               </button>
             </>
+          )}
+          {canAccountingReject && !canApprove && (
+            <button onClick={() => setRejectModalOpen(true)} className="px-4 py-2 text-sm font-medium bg-negative text-white rounded-lg hover:bg-negative/90 transition-colors">
+              {t('common.reject')}
+            </button>
           )}
           {canDisburse && (
             <button onClick={handleDisburse} className="px-4 py-2 text-sm font-medium bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors">
@@ -132,13 +177,22 @@ export default function AdvanceDetail() {
           <div className="bg-bg-secondary rounded-lg border border-border p-5">
             <h2 className="text-sm font-semibold text-text-primary mb-4">Details</h2>
             <div className="grid grid-cols-2 gap-y-3 gap-x-6 text-sm">
-              <div><span className="text-text-secondary">{t('advance.requester')}:</span> <span className="font-medium ml-1">{requesterName}</span></div>
+              <div><span className="text-text-secondary">{t('advance.requester')}:</span> <span className="font-medium ml-1">{getName(requester)}</span></div>
               <div><span className="text-text-secondary">{t('advance.company')}:</span> <span className="font-medium ml-1">{companyName}</span></div>
+              {record.branch && <div><span className="text-text-secondary">{t('advance.branch')}:</span> <span className="font-medium ml-1">{record.branch}</span></div>}
               <div><span className="text-text-secondary">{t('advance.advanceType')}:</span> <span className="font-medium ml-1 capitalize">{record.advanceType}</span></div>
+              <div><span className="text-text-secondary">{t('advance.requestDate')}:</span> <span className="font-medium ml-1">{formatDate(record.documentDate, i18n.language)}</span></div>
               <div><span className="text-text-secondary">{t('advance.requiredDate')}:</span> <span className="font-medium ml-1">{formatDate(record.requiredDate, i18n.language)}</span></div>
+              <div><span className="text-text-secondary">{t('advance.advanceReceiver')}:</span> <span className="font-medium ml-1">{getName(cashReceiver)}</span></div>
+              <div><span className="text-text-secondary">{t('advance.advanceOwner')}:</span> <span className="font-medium ml-1">{getName(cashHolder)}</span></div>
               <div><span className="text-text-secondary">{t('advance.paymentMethod')}:</span> <span className="font-medium ml-1 capitalize">{record.paymentMethod}</span></div>
               {bank && <div><span className="text-text-secondary">{t('advance.bank')}:</span> <span className="font-medium ml-1">{bankName}</span></div>}
               {record.accountNumber && <div><span className="text-text-secondary">{t('advance.accountNumber')}:</span> <span className="font-medium ml-1 font-mono">{record.accountNumber}</span></div>}
+              {record.chequeReceiveDate && <div><span className="text-text-secondary">{t('advance.chequeReceiveDate')}:</span> <span className="font-medium ml-1">{formatDate(record.chequeReceiveDate, i18n.language)}</span></div>}
+              {record.chequeDate && <div><span className="text-text-secondary">{t('advance.chequeDate')}:</span> <span className="font-medium ml-1">{formatDate(record.chequeDate, i18n.language)}</span></div>}
+              {record.whtCertificate && <div><span className="text-text-secondary">{t('advance.whtCertificate')}:</span> <span className="font-medium ml-1">{record.whtCertificate === 'immediately' ? t('advance.issueImmediately') : t('advance.issueLater')}</span></div>}
+              {record.note && <div className="col-span-2"><span className="text-text-secondary">{t('advance.note')}:</span> <span className="font-medium ml-1">{record.note}</span></div>}
+              {record.attachFile && <div><span className="text-text-secondary">{t('advance.attachFile')}:</span> <span className="font-medium ml-1 text-brand">{record.attachFile}</span></div>}
             </div>
           </div>
 

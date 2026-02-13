@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, Trash2 } from 'lucide-react';
 import { useData } from '../../context/DataContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -8,11 +8,17 @@ import { COMPANIES, BANKS, PAYMENT_METHODS, COST_CENTERS } from '../../data/cons
 import { USERS } from '../../data/users.js';
 import { generateId } from '../../utils/formatters.js';
 
+const CURRENCIES = ['THB', 'USD', 'EUR', 'SGD', 'JPY'];
+
 export default function PaymentForm() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { dispatch, state } = useData();
+  const [searchParams] = useSearchParams();
+  const { dispatch, state, getRecordById } = useData();
   const { currentUser } = useAuth();
+
+  const editId = searchParams.get('edit');
+  const isEditing = Boolean(editId);
 
   const managers = USERS.filter((u) => u.role === 'manager');
 
@@ -33,6 +39,40 @@ export default function PaymentForm() {
   const [lineItems, setLineItems] = useState([
     { wbsCostCenter: 'CC1001', description: '', amount: 0, additions: [{ type: 'vat', rate: 7, amount: 0 }] },
   ]);
+
+  const [hasMemo, setHasMemo] = useState(false);
+  const [memo, setMemo] = useState('');
+  const [attachments, setAttachments] = useState('');
+
+  // Load existing record when editing
+  useEffect(() => {
+    if (!editId) return;
+    const record = getRecordById('payment', editId);
+    if (!record) return;
+    setForm({
+      companyId: record.companyId || currentUser?.company || 'comp-1',
+      paymentDate: record.paymentDate || '',
+      currency: record.currency || 'THB',
+      paymentMethod: record.paymentMethod || 'transfer',
+      documentType: record.documentType || 'KR',
+      payee: record.payee || '',
+      payeeEmail: record.payeeEmail || '',
+      payeeBankId: record.payeeBankId || 'bank-1',
+      payeeBankAccount: record.payeeBankAccount || '',
+      paymentDetails: record.paymentDetails || '',
+      concurrers: record.concurrers || [],
+    });
+    if (record.lineItems && record.lineItems.length > 0) {
+      setLineItems(record.lineItems);
+    }
+    if (record.memo) {
+      setHasMemo(true);
+      setMemo(record.memo);
+    }
+    if (record.attachments) {
+      setAttachments(record.attachments);
+    }
+  }, [editId, getRecordById, currentUser]);
 
   const handleFieldChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -100,12 +140,9 @@ export default function PaymentForm() {
   };
 
   const handleSubmit = (asDraft) => {
-    const docNum = `PAY-2026-${String(state.payments.length + 1).padStart(4, '0')}`;
     const now = new Date().toISOString();
-    const newRecord = {
-      id: generateId(),
-      docNumber: docNum,
-      requesterId: currentUser?.id || 'user-03',
+
+    const commonFields = {
       companyId: form.companyId,
       paymentDate: form.paymentDate,
       currency: form.currency,
@@ -119,13 +156,32 @@ export default function PaymentForm() {
       lineItems,
       totalNet,
       concurrers: form.concurrers,
-      approvals: asDraft ? [] : [{ userId: currentUser?.id || 'user-03', action: 'submitted', date: now, comment: '' }],
-      status: asDraft ? 'draft' : 'pendingApproval',
-      sapDocNumber: null,
+      memo: hasMemo ? memo : '',
+      attachments,
     };
 
-    dispatch({ type: 'ADD_RECORD', module: 'payment', record: newRecord });
-    navigate(`/payment/${newRecord.id}`);
+    if (isEditing) {
+      const updates = {
+        ...commonFields,
+        approvals: asDraft ? [] : [{ userId: currentUser?.id || 'user-03', action: 'resubmitted', date: now, comment: '' }],
+        status: asDraft ? 'draft' : 'pendingApproval',
+      };
+      dispatch({ type: 'UPDATE_RECORD', module: 'payment', id: editId, updates });
+      navigate(`/payment/${editId}`);
+    } else {
+      const docNum = `PAY-2026-${String(state.payments.length + 1).padStart(4, '0')}`;
+      const newRecord = {
+        id: generateId(),
+        docNumber: docNum,
+        requesterId: currentUser?.id || 'user-03',
+        ...commonFields,
+        approvals: asDraft ? [] : [{ userId: currentUser?.id || 'user-03', action: 'submitted', date: now, comment: '' }],
+        status: asDraft ? 'draft' : 'pendingApproval',
+        sapDocNumber: null,
+      };
+      dispatch({ type: 'ADD_RECORD', module: 'payment', record: newRecord });
+      navigate(`/payment/${newRecord.id}`);
+    }
   };
 
   const labelClass = 'block text-xs font-semibold text-text-secondary mb-1';
@@ -133,7 +189,7 @@ export default function PaymentForm() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-text-primary mb-6">{t('payment.newPayment')}</h1>
+      <h1 className="text-xl font-bold text-text-primary mb-6">{isEditing ? t('payment.editPayment') : t('payment.newPayment')}</h1>
 
       {/* Header Fields */}
       <div className="bg-bg-secondary rounded-lg border border-border p-6 mb-4">
@@ -147,6 +203,12 @@ export default function PaymentForm() {
           <div>
             <label className={labelClass}>{t('payment.paymentDate')}</label>
             <input type="date" value={form.paymentDate} onChange={(e) => handleFieldChange('paymentDate', e.target.value)} className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>{t('payment.currency')}</label>
+            <select value={form.currency} onChange={(e) => handleFieldChange('currency', e.target.value)} className={inputClass}>
+              {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
           </div>
           <div>
             <label className={labelClass}>{t('payment.paymentMethod')}</label>
@@ -179,6 +241,41 @@ export default function PaymentForm() {
           <div className="md:col-span-2 lg:col-span-3">
             <label className={labelClass}>{t('payment.paymentDetails')}</label>
             <textarea value={form.paymentDetails} onChange={(e) => handleFieldChange('paymentDetails', e.target.value)} rows={2} className={inputClass} />
+          </div>
+
+          {/* Memo */}
+          <div className="md:col-span-2 lg:col-span-3">
+            <label className="inline-flex items-center gap-2 text-xs font-semibold text-text-secondary mb-1 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hasMemo}
+                onChange={(e) => setHasMemo(e.target.checked)}
+                className="rounded border-border text-brand focus:ring-brand"
+              />
+              {t('payment.attachMemo')}
+            </label>
+            {hasMemo && (
+              <textarea
+                value={memo}
+                onChange={(e) => setMemo(e.target.value)}
+                rows={3}
+                placeholder={t('payment.memo')}
+                className={inputClass + ' mt-1'}
+              />
+            )}
+          </div>
+
+          {/* Attachments */}
+          <div className="md:col-span-2 lg:col-span-3">
+            <label className={labelClass}>{t('payment.attachFiles')}</label>
+            <input
+              type="text"
+              value={attachments}
+              onChange={(e) => setAttachments(e.target.value)}
+              placeholder="invoice.pdf, receipt.jpg"
+              className={inputClass}
+            />
+            <p className="text-xs text-text-secondary mt-1">Comma-separated filenames</p>
           </div>
         </div>
       </div>
@@ -236,7 +333,7 @@ export default function PaymentForm() {
           ))}
         </div>
         <div className="mt-4 text-right text-base font-bold font-mono">
-          {t('payment.netPayment')}: {totalNet.toLocaleString('en-US', { minimumFractionDigits: 2 })} THB
+          {t('payment.netPayment')}: {totalNet.toLocaleString('en-US', { minimumFractionDigits: 2 })} {form.currency}
         </div>
       </div>
 

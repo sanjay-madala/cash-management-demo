@@ -29,7 +29,7 @@ export async function postDocument(module, data) {
         period: now.getMonth() + 1,
         currency: 'THB',
         reference: data.docNumber || data.reference || '',
-        documentType: module === 'pettyCash' ? 'KR' : 'KZ',
+        documentType: module === 'pettyCash' ? 'KR' : module === 'reconciliation' ? 'AB' : 'KZ',
         lineItems: data.glLineItems || [],
         status: 'Posted',
         createdAt: now.toISOString(),

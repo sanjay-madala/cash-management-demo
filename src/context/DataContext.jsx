@@ -3,6 +3,7 @@ import { ADVANCE_REQUESTS } from '../data/advanceRequests.js';
 import { PAYMENT_REQUESTS } from '../data/paymentRequests.js';
 import { expenses as initialExpenses } from '../data/expenses.js';
 import { pettyCash as initialPettyCash } from '../data/pettyCash.js';
+import { reconciliations as initialReconciliations } from '../data/reconciliations.js';
 
 const DataContext = createContext(null);
 
@@ -11,6 +12,7 @@ const initialState = {
   payments: PAYMENT_REQUESTS,
   expenses: initialExpenses,
   pettyCash: initialPettyCash,
+  reconciliations: initialReconciliations,
 };
 
 function getModuleKey(module) {
@@ -23,6 +25,8 @@ function getModuleKey(module) {
     expenses: 'expenses',
     pettyCash: 'pettyCash',
     'petty-cash': 'pettyCash',
+    reconciliation: 'reconciliations',
+    reconciliations: 'reconciliations',
   };
   return map[module] || module;
 }
@@ -132,6 +136,20 @@ export function DataProvider({ children }) {
     [state.pettyCash]
   );
 
+  const getReconciliations = useCallback(
+    (filters) => {
+      let items = state.reconciliations;
+      if (filters?.status) {
+        items = items.filter((item) => item.status === filters.status);
+      }
+      if (filters?.requesterId) {
+        items = items.filter((item) => item.requesterId === filters.requesterId);
+      }
+      return items;
+    },
+    [state.reconciliations]
+  );
+
   const getRecordById = useCallback(
     (module, id) => {
       const key = getModuleKey(module);
@@ -147,7 +165,8 @@ export function DataProvider({ children }) {
       pending(state.advances) +
       pending(state.payments) +
       pending(state.expenses) +
-      pending(state.pettyCash)
+      pending(state.pettyCash) +
+      pending(state.reconciliations)
     );
   }, [state]);
 
@@ -159,10 +178,11 @@ export function DataProvider({ children }) {
       getPaymentRequests,
       getExpenses,
       getPettyCash,
+      getReconciliations,
       getRecordById,
       getPendingApprovals,
     }),
-    [state, dispatch, getAdvanceRequests, getPaymentRequests, getExpenses, getPettyCash, getRecordById, getPendingApprovals]
+    [state, dispatch, getAdvanceRequests, getPaymentRequests, getExpenses, getPettyCash, getReconciliations, getRecordById, getPendingApprovals]
   );
 
   return (

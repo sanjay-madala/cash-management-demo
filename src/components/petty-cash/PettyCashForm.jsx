@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, Trash2 } from 'lucide-react';
 import { useData } from '../../context/DataContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -10,8 +10,12 @@ import { generateId } from '../../utils/formatters.js';
 export default function PettyCashForm() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { dispatch, state } = useData();
+  const [searchParams] = useSearchParams();
+  const { dispatch, state, getRecordById } = useData();
   const { currentUser } = useAuth();
+
+  const editId = searchParams.get('edit');
+  const editRecord = editId ? getRecordById('petty-cash', editId) : null;
 
   const [form, setForm] = useState({
     company: currentUser?.company || 'comp-1',
@@ -28,6 +32,25 @@ export default function PettyCashForm() {
   const [lineItems, setLineItems] = useState([
     { id: 1, type: 'expense', glAccount: '6200010', description: '', amount: 0, taxCode: 'V7', costCenter: 'CC-1001', wbs: '', profitCenter: 'PC-1000', assignment: '', text: '' },
   ]);
+
+  useEffect(() => {
+    if (editRecord) {
+      setForm({
+        company: editRecord.company || currentUser?.company || 'comp-1',
+        vendorName: editRecord.vendorName || '',
+        vendorId: editRecord.vendorId || '',
+        documentDate: editRecord.documentDate || new Date().toISOString().split('T')[0],
+        postingDate: editRecord.postingDate || new Date().toISOString().split('T')[0],
+        businessPlace: editRecord.businessPlace || 'BP01',
+        documentType: editRecord.documentType || 'KR',
+        reference: editRecord.reference || '',
+        payTo: editRecord.payTo || (currentUser ? `${currentUser.firstNameEn} ${currentUser.lastNameEn}` : ''),
+      });
+      if (editRecord.lineItems && editRecord.lineItems.length > 0) {
+        setLineItems(editRecord.lineItems);
+      }
+    }
+  }, [editRecord]);
 
   const handleFieldChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -48,32 +71,52 @@ export default function PettyCashForm() {
   const totalAmount = lineItems.reduce((s, i) => s + i.amount, 0);
 
   const handleSubmit = (asDraft) => {
-    const docNum = `PC-${String(state.pettyCash.length + 1).padStart(4, '0')}`;
     const now = new Date().toISOString();
-    const newRecord = {
-      id: generateId(),
-      docNumber: docNum,
-      requesterId: currentUser?.id || 'user-03',
-      requesterName: currentUser ? `${currentUser.firstNameEn} ${currentUser.lastNameEn}` : 'Unknown',
-      department: currentUser?.department || 'dept-1',
-      company: form.company,
-      vendorName: form.vendorName,
-      vendorId: form.vendorId,
-      documentDate: form.documentDate,
-      postingDate: form.postingDate,
-      createdDate: now.split('T')[0],
-      businessPlace: form.businessPlace,
-      documentType: form.documentType,
-      reference: form.reference,
-      status: asDraft ? 'draft' : 'pendingApproval',
-      payTo: form.payTo,
-      lineItems,
-      totalAmount,
-      approvals: asDraft ? [] : [{ userId: currentUser?.id || 'user-03', action: 'submitted', date: now, comment: '' }],
-    };
 
-    dispatch({ type: 'ADD_RECORD', module: 'pettyCash', record: newRecord });
-    navigate(`/petty-cash/${newRecord.id}`);
+    if (editId) {
+      dispatch({ type: 'UPDATE_RECORD', module: 'pettyCash', id: editId, updates: {
+        company: form.company,
+        vendorName: form.vendorName,
+        vendorId: form.vendorId,
+        documentDate: form.documentDate,
+        postingDate: form.postingDate,
+        businessPlace: form.businessPlace,
+        documentType: form.documentType,
+        reference: form.reference,
+        payTo: form.payTo,
+        lineItems,
+        totalAmount,
+        status: asDraft ? 'draft' : 'pendingApproval',
+        approvals: asDraft ? (editRecord?.approvals || []) : [...(editRecord?.approvals || []), { userId: currentUser?.id, action: 'resubmitted', date: now, comment: '' }],
+      }});
+      navigate(`/petty-cash/${editId}`);
+    } else {
+      const docNum = `PC-${String(state.pettyCash.length + 1).padStart(4, '0')}`;
+      const newRecord = {
+        id: generateId(),
+        docNumber: docNum,
+        requesterId: currentUser?.id || 'user-03',
+        requesterName: currentUser ? `${currentUser.firstNameEn} ${currentUser.lastNameEn}` : 'Unknown',
+        department: currentUser?.department || 'dept-1',
+        company: form.company,
+        vendorName: form.vendorName,
+        vendorId: form.vendorId,
+        documentDate: form.documentDate,
+        postingDate: form.postingDate,
+        createdDate: now.split('T')[0],
+        businessPlace: form.businessPlace,
+        documentType: form.documentType,
+        reference: form.reference,
+        status: asDraft ? 'draft' : 'pendingApproval',
+        payTo: form.payTo,
+        lineItems,
+        totalAmount,
+        approvals: asDraft ? [] : [{ userId: currentUser?.id || 'user-03', action: 'submitted', date: now, comment: '' }],
+      };
+
+      dispatch({ type: 'ADD_RECORD', module: 'pettyCash', record: newRecord });
+      navigate(`/petty-cash/${newRecord.id}`);
+    }
   };
 
   const labelClass = 'block text-xs font-semibold text-text-secondary mb-1';
@@ -81,7 +124,7 @@ export default function PettyCashForm() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-text-primary mb-6">{t('pettyCash.newVoucher')}</h1>
+      <h1 className="text-xl font-bold text-text-primary mb-6">{editId ? t('pettyCash.editVoucher', 'Edit Voucher') : t('pettyCash.newVoucher')}</h1>
 
       <div className="bg-bg-secondary rounded-lg border border-border p-6 mb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

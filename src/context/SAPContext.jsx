@@ -20,6 +20,10 @@ const GL_ACCOUNTS = {
     debit: { account: 'EXPENSE', name: 'Expense Account' },
     credit: { account: '210103', name: 'Petty Cash Payable' },
   },
+  reconciliation: {
+    debit: { account: 'EXPENSE', name: 'Expense Account' },
+    credit: { account: '3100054', name: 'Staff Advance (Clearing)' },
+  },
 };
 
 function buildLineItems(module, data) {

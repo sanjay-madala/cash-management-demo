@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, Trash2, Check } from 'lucide-react';
 import { useData } from '../../context/DataContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -12,8 +12,14 @@ const STEPS = ['step1Title', 'step2Title', 'step3Title'];
 export default function ExpenseForm() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { dispatch, state } = useData();
+  const [searchParams] = useSearchParams();
+  const { dispatch, state, getRecordById } = useData();
   const { currentUser } = useAuth();
+
+  const editId = searchParams.get('edit');
+  const editRecord = editId ? getRecordById('expense', editId) : null;
+
+  const TRAVEL_EXPENSE_TYPES = ['fuel', 'toll', 'transportMileage', 'parking'];
 
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -34,6 +40,46 @@ export default function ExpenseForm() {
   const [otherExpenses, setOtherExpenses] = useState([
     { id: 1, expenseType: 'meals', description: '', amount: 0, receipt: true },
   ]);
+
+  // Pre-fill form when editing an existing record
+  useEffect(() => {
+    if (editRecord) {
+      setStep1({
+        company: editRecord.company || currentUser?.company || 'comp-1',
+        costCenter: editRecord.costCenter || 'CC1001',
+        travelType: editRecord.travelType || 'companyVehicle',
+        travelDate: editRecord.travelDate || '',
+        travelPurpose: editRecord.travelPurpose || '',
+        companions: editRecord.companions || '',
+        remarks: editRecord.remarks || '',
+      });
+
+      if (editRecord.lineItems && editRecord.lineItems.length > 0) {
+        const travelItems = editRecord.lineItems.filter((li) => TRAVEL_EXPENSE_TYPES.includes(li.expenseType));
+        const otherItems = editRecord.lineItems.filter((li) => !TRAVEL_EXPENSE_TYPES.includes(li.expenseType));
+
+        if (travelItems.length > 0) {
+          setTravelExpenses(travelItems.map((li, idx) => ({
+            id: idx + 1,
+            expenseType: li.expenseType,
+            description: li.description || '',
+            amount: li.amount || 0,
+            receipt: li.receipt !== undefined ? li.receipt : true,
+          })));
+        }
+
+        if (otherItems.length > 0) {
+          setOtherExpenses(otherItems.map((li, idx) => ({
+            id: idx + 1,
+            expenseType: li.expenseType,
+            description: li.description || '',
+            amount: li.amount || 0,
+            receipt: li.receipt !== undefined ? li.receipt : true,
+          })));
+        }
+      }
+    }
+  }, [editId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStep1Change = (field, value) => setStep1((prev) => ({ ...prev, [field]: value }));
 
@@ -69,32 +115,55 @@ export default function ExpenseForm() {
   const totalAmount = allLineItems.reduce((s, i) => s + i.amount, 0);
 
   const handleSubmit = (asDraft) => {
-    const docNum = `EXP-${String(state.expenses.length + 1).padStart(4, '0')}`;
     const now = new Date().toISOString();
-    const newRecord = {
-      id: generateId(),
-      docNumber: docNum,
-      requesterId: currentUser?.id || 'user-03',
-      requesterName: currentUser ? `${currentUser.firstNameEn} ${currentUser.lastNameEn}` : 'Unknown',
-      department: currentUser?.department || 'dept-1',
-      company: step1.company,
-      travelType: step1.travelType,
-      travelDate: step1.travelDate,
-      travelPurpose: step1.travelPurpose,
-      companions: step1.companions,
-      createdDate: now.split('T')[0],
-      status: asDraft ? 'draft' : 'pendingApproval',
-      advanceId: null,
-      advanceAmount: 0,
-      lineItems: allLineItems,
-      totalAmount,
-      netSettlement: totalAmount,
-      remarks: step1.remarks,
-      approvals: asDraft ? [] : [{ userId: currentUser?.id || 'user-03', action: 'submitted', date: now, comment: '' }],
-    };
 
-    dispatch({ type: 'ADD_RECORD', module: 'expense', record: newRecord });
-    navigate(`/expense/${newRecord.id}`);
+    if (editId && editRecord) {
+      const updates = {
+        company: step1.company,
+        costCenter: step1.costCenter,
+        travelType: step1.travelType,
+        travelDate: step1.travelDate,
+        travelPurpose: step1.travelPurpose,
+        companions: step1.companions,
+        remarks: step1.remarks,
+        lineItems: allLineItems,
+        totalAmount,
+        netSettlement: totalAmount,
+        status: asDraft ? 'draft' : 'pendingApproval',
+        approvals: asDraft
+          ? (editRecord.approvals || [])
+          : [...(editRecord.approvals || []).filter((a) => a.action !== 'submitted'), { userId: currentUser?.id || 'user-03', action: 'resubmitted', date: now, comment: '' }],
+      };
+      dispatch({ type: 'UPDATE_RECORD', module: 'expense', id: editId, updates });
+      navigate(`/expense/${editId}`);
+    } else {
+      const docNum = `EXP-${String(state.expenses.length + 1).padStart(4, '0')}`;
+      const newRecord = {
+        id: generateId(),
+        docNumber: docNum,
+        requesterId: currentUser?.id || 'user-03',
+        requesterName: currentUser ? `${currentUser.firstNameEn} ${currentUser.lastNameEn}` : 'Unknown',
+        department: currentUser?.department || 'dept-1',
+        company: step1.company,
+        costCenter: step1.costCenter,
+        travelType: step1.travelType,
+        travelDate: step1.travelDate,
+        travelPurpose: step1.travelPurpose,
+        companions: step1.companions,
+        createdDate: now.split('T')[0],
+        status: asDraft ? 'draft' : 'pendingApproval',
+        advanceId: null,
+        advanceAmount: 0,
+        lineItems: allLineItems,
+        totalAmount,
+        netSettlement: totalAmount,
+        remarks: step1.remarks,
+        approvals: asDraft ? [] : [{ userId: currentUser?.id || 'user-03', action: 'submitted', date: now, comment: '' }],
+      };
+
+      dispatch({ type: 'ADD_RECORD', module: 'expense', record: newRecord });
+      navigate(`/expense/${newRecord.id}`);
+    }
   };
 
   const labelClass = 'block text-xs font-semibold text-text-secondary mb-1';
@@ -102,7 +171,9 @@ export default function ExpenseForm() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-text-primary mb-6">{t('expense.newExpense')}</h1>
+      <h1 className="text-xl font-bold text-text-primary mb-6">
+        {editRecord ? `${t('common.edit')}: ${editRecord.docNumber}` : t('expense.newExpense')}
+      </h1>
 
       {/* Step Indicator */}
       <div className="flex items-center mb-6">

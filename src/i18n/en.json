@@ -5,6 +5,7 @@
     "paymentRequest": "Payment Request",
     "expenseSystem": "Expense System",
     "pettyCash": "Petty Cash",
+    "reconciliation": "Reconciliation",
     "sapDocuments": "SAP Documents",
     "logout": "Logout"
   },
@@ -90,11 +91,23 @@
     "accountNumber": "Account Number",
     "taxCertificate": "Tax Certificate",
     "issueImmediately": "Issue Immediately",
-    "issueLater": "Issue Later"
+    "issueLater": "Issue Later",
+    "branch": "Tax Branch",
+    "requestDate": "Request Date",
+    "advanceReceiver": "Advance Receiver",
+    "advanceOwner": "Advance Owner",
+    "attachFile": "Attach File",
+    "note": "Note",
+    "whtCertificate": "WHT Certificate",
+    "chequeDate": "Cheque Date",
+    "chequeReceiveDate": "Cheque Receive Date",
+    "confirmReceipt": "Confirm Receipt",
+    "receivedCash": "Received Cash"
   },
   "payment": {
     "title": "Payment Request",
     "newPayment": "New Payment Request",
+    "editPayment": "Edit Payment Request",
     "payee": "Payee",
     "paymentDate": "Payment Date",
     "paymentMethod": "Payment Method",
@@ -119,7 +132,10 @@
     "attachedFiles": "Attached Files",
     "concurrers": "Concurrers",
     "saveDraft": "Save Draft",
-    "request": "Request"
+    "request": "Request",
+    "currency": "Currency",
+    "attachMemo": "Attach Memo",
+    "attachFiles": "Attach Files"
   },
   "expense": {
     "title": "Expense System",
@@ -172,6 +188,30 @@
     "profitCenter": "Profit Center",
     "assignment": "Assignment",
     "text": "Text"
+  },
+  "reconciliation": {
+    "title": "Reconciliation",
+    "newReconciliation": "New Reconciliation",
+    "selectAdvance": "Select Advance",
+    "advanceAmount": "Advance Amount",
+    "totalExpenses": "Total Expenses",
+    "settlement": "Settlement",
+    "surplus": "Surplus (Return to Company)",
+    "deficit": "Deficit (Reimbursement)",
+    "exactMatch": "Exact Match",
+    "amountToReturn": "Amount to Return",
+    "reimbursementAmount": "Reimbursement Amount",
+    "transferSlip": "Transfer Slip",
+    "clearAdvance": "Clear Advance",
+    "overdue": "Overdue",
+    "daysUncleared": "Days Uncleared",
+    "advanceRef": "Advance Ref",
+    "expenseItems": "Expense Items",
+    "settlementSummary": "Settlement Summary",
+    "returnMethod": "Return Method",
+    "step1": "Select Advance",
+    "step2": "Record Expenses",
+    "step3": "Review & Submit"
   },
   "sap": {
     "documentLog": "SAP Document Log",

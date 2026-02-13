@@ -18,17 +18,25 @@ const ALL_STATUSES = ['draft', 'pendingApproval', 'approved', 'rejected', 'retur
 export default function AdvanceList() {
   const { t, i18n } = useTranslation();
   const { state } = useData();
-  const { currentRole } = useAuth();
+  const { currentRole, currentUser } = useAuth();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
   const filtered = useMemo(() => {
     let items = state.advances;
+    // Role-based filtering
+    if (currentRole === 'employee') {
+      items = items.filter((r) => r.requesterId === currentUser?.id);
+    } else if (currentRole === 'manager') {
+      items = items.filter((r) => ['pendingApproval', 'approved', 'disbursed', 'cleared'].includes(r.status));
+    } else if (currentRole === 'accounting') {
+      items = items.filter((r) => ['approved', 'disbursed', 'cleared', 'posted'].includes(r.status));
+    }
     items = filterByStatus(items, statusFilter);
     items = filterBySearch(items, search, ['docNumber', 'purpose']);
     return items;
-  }, [state.advances, search, statusFilter]);
+  }, [state.advances, search, statusFilter, currentRole, currentUser]);
 
   const getUser = (id) => USERS.find((u) => u.id === id);
   const getCompany = (id) => COMPANIES.find((c) => c.id === id);

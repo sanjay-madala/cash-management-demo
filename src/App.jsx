@@ -18,6 +18,9 @@ import ExpenseDetail from './components/expense/ExpenseDetail.jsx';
 import PettyCashList from './components/petty-cash/PettyCashList.jsx';
 import PettyCashForm from './components/petty-cash/PettyCashForm.jsx';
 import PettyCashDetail from './components/petty-cash/PettyCashDetail.jsx';
+import ReconciliationList from './components/reconciliation/ReconciliationList.jsx';
+import ReconciliationForm from './components/reconciliation/ReconciliationForm.jsx';
+import ReconciliationDetail from './components/reconciliation/ReconciliationDetail.jsx';
 import SAPDocumentLog from './components/sap/SAPDocumentLog.jsx';
 
 export default function App() {
@@ -41,6 +44,9 @@ export default function App() {
                 <Route path="petty-cash" element={<PettyCashList />} />
                 <Route path="petty-cash/new" element={<PettyCashForm />} />
                 <Route path="petty-cash/:id" element={<PettyCashDetail />} />
+                <Route path="reconciliation" element={<ReconciliationList />} />
+                <Route path="reconciliation/new" element={<ReconciliationForm />} />
+                <Route path="reconciliation/:id" element={<ReconciliationDetail />} />
                 <Route path="sap-documents" element={<SAPDocumentLog />} />
               </Route>
             </Routes>

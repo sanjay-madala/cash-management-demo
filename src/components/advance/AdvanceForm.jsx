@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2 } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Plus, Trash2, Upload } from 'lucide-react';
 import { useData } from '../../context/DataContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { COMPANIES, BANKS, PAYMENT_METHODS } from '../../data/constants.js';
@@ -17,25 +17,52 @@ const ADVANCE_TYPES = [
 const VAT_OPTIONS = [0, 7];
 const WHT_OPTIONS = [0, 1, 2, 3, 5];
 
+const BRANCHES = [
+  { id: 'HQ', label: { en: 'Head Office', th: 'สำนักงานใหญ่' } },
+  { id: 'BR01', label: { en: 'Branch 01', th: 'สาขา 01' } },
+  { id: 'BR02', label: { en: 'Branch 02', th: 'สาขา 02' } },
+  { id: 'BR03', label: { en: 'Branch 03', th: 'สาขา 03' } },
+];
+
 export default function AdvanceForm() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { dispatch, state } = useData();
+  const [searchParams] = useSearchParams();
+  const { dispatch, state, getRecordById } = useData();
   const { currentUser } = useAuth();
 
+  const editId = searchParams.get('edit');
+  const editRecord = editId ? getRecordById('advance', editId) : null;
+
+  const employees = USERS.filter((u) => u.role === 'employee');
+
   const [form, setForm] = useState({
-    companyId: currentUser?.company || 'comp-1',
-    purpose: '',
-    advanceType: 'specific',
-    requiredDate: '',
-    paymentMethod: 'transfer',
-    bankId: 'bank-1',
-    accountNumber: '',
+    companyId: editRecord?.companyId || currentUser?.company || 'comp-1',
+    branch: editRecord?.branch || 'HQ',
+    purpose: editRecord?.purpose || '',
+    advanceType: editRecord?.advanceType || 'specific',
+    requiredDate: editRecord?.requiredDate || '',
+    requestDate: editRecord?.documentDate || new Date().toISOString().split('T')[0],
+    advanceReceiverId: editRecord?.cashReceiverId || currentUser?.id || 'user-03',
+    advanceOwnerId: editRecord?.cashHolderId || currentUser?.id || 'user-03',
+    paymentMethod: editRecord?.paymentMethod || 'transfer',
+    bankId: editRecord?.bankId || 'bank-1',
+    accountNumber: editRecord?.accountNumber || '',
+    chequeReceiveDate: editRecord?.chequeReceiveDate || '',
+    chequeDate: editRecord?.chequeDate || '',
+    whtCertificate: editRecord?.whtCertificate || 'immediately',
+    note: editRecord?.note || '',
+    attachFile: editRecord?.attachFile || '',
   });
 
-  const [lineItems, setLineItems] = useState([
-    { description: '', amount: 0, vatRate: 7, whtRate: 0 },
-  ]);
+  const [lineItems, setLineItems] = useState(
+    editRecord?.lineItems?.map((li) => ({
+      description: li.description,
+      amount: li.amount,
+      vatRate: li.vatRate,
+      whtRate: li.whtRate,
+    })) || [{ description: '', amount: 0, vatRate: 7, whtRate: 0 }]
+  );
 
   const handleFieldChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -65,21 +92,23 @@ export default function AdvanceForm() {
 
   const totalAmount = lineItems.reduce((sum, item) => sum + calcNet(item), 0);
 
+  const isCheque = form.paymentMethod === 'companyCheque' || form.paymentMethod === 'cashierCheque';
+
   const handleSubmit = (asDraft) => {
-    const docNum = `ADV-2026-${String(state.advances.length + 1).padStart(4, '0')}`;
     const now = new Date().toISOString();
-    const newRecord = {
-      id: generateId(),
-      docNumber: docNum,
+    const record = {
+      id: editRecord?.id || generateId(),
+      docNumber: editRecord?.docNumber || `ADV-2026-${String(state.advances.length + 1).padStart(4, '0')}`,
       requesterId: currentUser?.id || 'user-03',
       companyId: form.companyId,
+      branch: form.branch,
       department: currentUser?.department || 'dept-1',
       purpose: form.purpose,
       advanceType: form.advanceType,
-      cashReceiverId: currentUser?.id || 'user-03',
-      cashHolderId: currentUser?.id || 'user-03',
+      cashReceiverId: form.advanceReceiverId,
+      cashHolderId: form.advanceOwnerId,
       requiredDate: form.requiredDate,
-      documentDate: now.split('T')[0],
+      documentDate: form.requestDate,
       status: asDraft ? 'draft' : 'pendingApproval',
       lineItems: lineItems.map((item) => ({
         description: item.description,
@@ -91,13 +120,29 @@ export default function AdvanceForm() {
       paymentMethod: form.paymentMethod,
       bankId: form.paymentMethod === 'cash' ? null : form.bankId,
       accountNumber: form.paymentMethod === 'cash' ? null : form.accountNumber,
-      approvals: asDraft ? [] : [{ userId: currentUser?.id || 'user-03', action: 'submitted', date: now, comment: '' }],
+      chequeReceiveDate: isCheque ? form.chequeReceiveDate : null,
+      chequeDate: isCheque ? form.chequeDate : null,
+      whtCertificate: form.whtCertificate,
+      note: form.note,
+      attachFile: form.attachFile,
+      approvals: asDraft
+        ? (editRecord?.approvals || [])
+        : [...(editRecord?.approvals || []).filter((a) => a.action !== 'submitted'), { userId: currentUser?.id || 'user-03', action: 'submitted', date: now, comment: editRecord ? 'Resubmitted' : '' }],
       totalAmount,
-      sapDocNumber: null,
+      sapDocNumber: editRecord?.sapDocNumber || null,
     };
 
-    dispatch({ type: 'ADD_RECORD', module: 'advance', record: newRecord });
-    navigate(`/advance/${newRecord.id}`);
+    if (editRecord) {
+      dispatch({ type: 'UPDATE_RECORD', module: 'advance', id: editRecord.id, updates: record });
+    } else {
+      dispatch({ type: 'ADD_RECORD', module: 'advance', record });
+    }
+    navigate(`/advance/${record.id}`);
+  };
+
+  const getUserName = (userId) => {
+    const u = USERS.find((u) => u.id === userId);
+    return u ? (i18n.language === 'th' ? `${u.firstName} ${u.lastName}` : `${u.firstNameEn} ${u.lastNameEn}`) : '-';
   };
 
   const labelClass = 'block text-xs font-semibold text-text-secondary mb-1';
@@ -105,8 +150,11 @@ export default function AdvanceForm() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-text-primary mb-6">{t('advance.newAdvance')}</h1>
+      <h1 className="text-xl font-bold text-text-primary mb-6">
+        {editRecord ? `${t('common.edit')}: ${editRecord.docNumber}` : t('advance.newAdvance')}
+      </h1>
 
+      {/* Header Fields */}
       <div className="bg-bg-secondary rounded-lg border border-border p-6 mb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
@@ -116,18 +164,59 @@ export default function AdvanceForm() {
             </select>
           </div>
           <div>
+            <label className={labelClass}>{t('advance.branch')}</label>
+            <select value={form.branch} onChange={(e) => handleFieldChange('branch', e.target.value)} className={inputClass}>
+              {BRANCHES.map((b) => <option key={b.id} value={b.id}>{i18n.language === 'th' ? b.label.th : b.label.en}</option>)}
+            </select>
+          </div>
+          <div>
             <label className={labelClass}>{t('advance.advanceType')}</label>
             <select value={form.advanceType} onChange={(e) => handleFieldChange('advanceType', e.target.value)} className={inputClass}>
               {ADVANCE_TYPES.map((at) => <option key={at.id} value={at.id}>{t(at.labelKey)}</option>)}
             </select>
           </div>
           <div>
+            <label className={labelClass}>{t('advance.requestDate')}</label>
+            <input type="date" value={form.requestDate} onChange={(e) => handleFieldChange('requestDate', e.target.value)} className={inputClass} />
+          </div>
+          <div>
             <label className={labelClass}>{t('advance.requiredDate')}</label>
             <input type="date" value={form.requiredDate} onChange={(e) => handleFieldChange('requiredDate', e.target.value)} className={inputClass} />
           </div>
-          <div className="md:col-span-2 lg:col-span-3">
+          <div>
+            <label className={labelClass}>{t('advance.advanceReceiver')}</label>
+            <select value={form.advanceReceiverId} onChange={(e) => handleFieldChange('advanceReceiverId', e.target.value)} className={inputClass}>
+              {employees.map((u) => <option key={u.id} value={u.id}>{getUserName(u.id)}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelClass}>{t('advance.advanceOwner')}</label>
+            <select value={form.advanceOwnerId} onChange={(e) => handleFieldChange('advanceOwnerId', e.target.value)} className={inputClass}>
+              {employees.map((u) => <option key={u.id} value={u.id}>{getUserName(u.id)}</option>)}
+            </select>
+          </div>
+          <div className="md:col-span-2 lg:col-span-2">
             <label className={labelClass}>{t('advance.purpose')}</label>
             <textarea value={form.purpose} onChange={(e) => handleFieldChange('purpose', e.target.value)} rows={2} className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>{t('advance.attachFile')}</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={form.attachFile}
+                onChange={(e) => handleFieldChange('attachFile', e.target.value)}
+                className={inputClass}
+                placeholder="filename.pdf"
+              />
+              <button className="p-2 text-brand border border-brand rounded-lg hover:bg-brand/5">
+                <Upload size={16} />
+              </button>
+            </div>
+          </div>
+          <div className="md:col-span-2 lg:col-span-3">
+            <label className={labelClass}>{t('advance.note')}</label>
+            <textarea value={form.note} onChange={(e) => handleFieldChange('note', e.target.value)} rows={2} className={inputClass} placeholder={t('advance.note')} />
           </div>
         </div>
       </div>
@@ -194,7 +283,7 @@ export default function AdvanceForm() {
       </div>
 
       {/* Payment Section */}
-      <div className="bg-bg-secondary rounded-lg border border-border p-6 mb-6">
+      <div className="bg-bg-secondary rounded-lg border border-border p-6 mb-4">
         <h2 className="text-sm font-semibold text-text-primary mb-4">{t('advance.paymentMethod')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
@@ -203,7 +292,7 @@ export default function AdvanceForm() {
               {PAYMENT_METHODS.map((pm) => <option key={pm.id} value={pm.id}>{i18n.language === 'th' ? pm.label.th : pm.label.en}</option>)}
             </select>
           </div>
-          {form.paymentMethod !== 'cash' && (
+          {form.paymentMethod !== 'cash' && !isCheque && (
             <>
               <div>
                 <label className={labelClass}>{t('advance.bank')}</label>
@@ -217,6 +306,47 @@ export default function AdvanceForm() {
               </div>
             </>
           )}
+          {isCheque && (
+            <>
+              <div>
+                <label className={labelClass}>{t('advance.chequeReceiveDate')}</label>
+                <input type="date" value={form.chequeReceiveDate} onChange={(e) => handleFieldChange('chequeReceiveDate', e.target.value)} className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>{t('advance.chequeDate')}</label>
+                <input type="date" value={form.chequeDate} onChange={(e) => handleFieldChange('chequeDate', e.target.value)} className={inputClass} />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* WHT Certificate */}
+      <div className="bg-bg-secondary rounded-lg border border-border p-6 mb-6">
+        <h2 className="text-sm font-semibold text-text-primary mb-4">{t('advance.whtCertificate')}</h2>
+        <div className="flex gap-6">
+          <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <input
+              type="radio"
+              name="whtCertificate"
+              value="immediately"
+              checked={form.whtCertificate === 'immediately'}
+              onChange={(e) => handleFieldChange('whtCertificate', e.target.value)}
+              className="accent-brand"
+            />
+            {t('advance.issueImmediately')}
+          </label>
+          <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <input
+              type="radio"
+              name="whtCertificate"
+              value="later"
+              checked={form.whtCertificate === 'later'}
+              onChange={(e) => handleFieldChange('whtCertificate', e.target.value)}
+              className="accent-brand"
+            />
+            {t('advance.issueLater')}
+          </label>
         </div>
       </div>
 

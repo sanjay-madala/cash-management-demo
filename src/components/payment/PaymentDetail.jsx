@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText } from 'lucide-react';
+import { ArrowLeft, FileText, Pencil } from 'lucide-react';
 import { useData } from '../../context/DataContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useSAP } from '../../context/SAPContext.jsx';
@@ -40,6 +40,10 @@ export default function PaymentDetail() {
   const canApprove = currentRole === 'manager' && record.status === 'pendingApproval';
   const canDisburse = currentRole === 'accounting' && record.status === 'approved';
   const canPostSAP = currentRole === 'accounting' && (record.status === 'approved' || record.status === 'disbursed') && !sapDoc;
+  const canEdit =
+    currentRole === 'employee' &&
+    record.requesterId === currentUser?.id &&
+    (record.status === 'draft' || record.status === 'returned' || record.status === 'rejected');
 
   const handleApprove = () => {
     const now = new Date().toISOString();
@@ -88,6 +92,14 @@ export default function PaymentDetail() {
           <p className="text-sm text-text-secondary mt-0.5">{record.paymentDetails}</p>
         </div>
         <div className="flex gap-2">
+          {canEdit && (
+            <button
+              onClick={() => navigate(`/payment/new?edit=${record.id}`)}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-brand border border-brand rounded-lg hover:bg-brand/5 transition-colors"
+            >
+              <Pencil size={14} /> {t('common.edit')}
+            </button>
+          )}
           {canApprove && (
             <>
               <button onClick={handleApprove} className="px-4 py-2 text-sm font-medium bg-positive text-white rounded-lg hover:bg-positive/90 transition-colors">{t('common.approve')}</button>

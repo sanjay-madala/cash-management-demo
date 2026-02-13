@@ -5,6 +5,7 @@
     "paymentRequest": "ใบขอชำระเงิน",
     "expenseSystem": "ระบบเบิกค่าใช้จ่าย",
     "pettyCash": "เงินสดย่อย",
+    "reconciliation": "การกระทบยอด",
     "sapDocuments": "เอกสาร SAP",
     "logout": "ออกจากระบบ"
   },
@@ -90,11 +91,23 @@
     "accountNumber": "เลขที่บัญชี",
     "taxCertificate": "หนังสือรับรองภาษี",
     "issueImmediately": "ออกทันที",
-    "issueLater": "ออกภายหลัง"
+    "issueLater": "ออกภายหลัง",
+    "branch": "สาขาภาษี",
+    "requestDate": "วันที่ทำเอกสาร",
+    "advanceReceiver": "ผู้รับเงินทดรอง",
+    "advanceOwner": "ผู้ถือเงินทดรอง",
+    "attachFile": "เอกสารแนบ",
+    "note": "หมายเหตุ",
+    "whtCertificate": "หนังสือรับรองหัก ณ ที่จ่าย",
+    "chequeDate": "วันที่ระบุในเช็ค",
+    "chequeReceiveDate": "วันที่ขอรับเช็ค",
+    "confirmReceipt": "ยืนยันการรับเงิน",
+    "receivedCash": "ได้รับเงินแล้ว"
   },
   "payment": {
     "title": "ใบขอชำระเงิน",
     "newPayment": "สร้างใบขอชำระเงินใหม่",
+    "editPayment": "แก้ไขใบขอชำระเงิน",
     "payee": "ผู้รับเงิน",
     "paymentDate": "วันที่ชำระเงิน",
     "paymentMethod": "วิธีการชำระเงิน",
@@ -119,7 +132,10 @@
     "attachedFiles": "ไฟล์แนบ",
     "concurrers": "ผู้ร่วมลงนาม",
     "saveDraft": "บันทึกร่าง",
-    "request": "ขอชำระเงิน"
+    "request": "ขอชำระเงิน",
+    "currency": "สกุลเงิน",
+    "attachMemo": "แนบบันทึก",
+    "attachFiles": "แนบไฟล์"
   },
   "expense": {
     "title": "ระบบเบิกค่าใช้จ่าย",
@@ -172,6 +188,30 @@
     "profitCenter": "ศูนย์กำไร",
     "assignment": "การกำหนด",
     "text": "ข้อความ"
+  },
+  "reconciliation": {
+    "title": "การกระทบยอด",
+    "newReconciliation": "สร้างรายการกระทบยอดใหม่",
+    "selectAdvance": "เลือกเงินทดรอง",
+    "advanceAmount": "จำนวนเงินทดรอง",
+    "totalExpenses": "ค่าใช้จ่ายรวม",
+    "settlement": "การชำระบัญชี",
+    "surplus": "เงินเกิน (คืนบริษัท)",
+    "deficit": "เงินขาด (เบิกเพิ่ม)",
+    "exactMatch": "พอดี",
+    "amountToReturn": "จำนวนเงินที่ต้องคืน",
+    "reimbursementAmount": "จำนวนเงินที่ต้องเบิกเพิ่ม",
+    "transferSlip": "สลิปโอนเงิน",
+    "clearAdvance": "เคลียร์เงินทดรอง",
+    "overdue": "เกินกำหนด",
+    "daysUncleared": "จำนวนวันที่ยังไม่เคลียร์",
+    "advanceRef": "อ้างอิงเงินทดรอง",
+    "expenseItems": "รายการค่าใช้จ่าย",
+    "settlementSummary": "สรุปการชำระบัญชี",
+    "returnMethod": "วิธีการคืนเงิน",
+    "step1": "เลือกเงินทดรอง",
+    "step2": "บันทึกค่าใช้จ่าย",
+    "step3": "ตรวจสอบและส่ง"
   },
   "sap": {
     "documentLog": "บันทึกเอกสาร SAP",
