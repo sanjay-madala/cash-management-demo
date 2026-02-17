@@ -52,7 +52,7 @@ export default function ReimbursementDetail() {
   const canEndTrip = isOwner && record.status === 'tripApproved';
   const canRecordExpenses = isOwner && (record.status === 'tripEnded' || record.status === 'tripApproved');
   const canApproveTrip = currentRole === 'manager' && record.status === 'pendingApproval';
-  const canHRReview = currentRole === 'employee' && record.status === 'expenseSubmitted'; // simplified — HR role not separate
+  const canHRReview = currentRole === 'manager' && record.status === 'expenseSubmitted';
   const canManagerApproveExpenses = currentRole === 'manager' && record.status === 'hrReviewed';
   const canAccountingVerify = currentRole === 'accounting' && record.status === 'paymentGenerated';
   const canPostSAP = currentRole === 'accounting' && record.status === 'accountingVerified';
@@ -156,9 +156,14 @@ export default function ReimbursementDetail() {
             </>
           )}
           {canHRReview && (
-            <button onClick={handleHRReview} className="px-4 py-2 text-sm font-medium bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors">
-              {t('reimbursement.hrReview', 'HR Review')}
-            </button>
+            <>
+              <button onClick={handleHRReview} className="px-4 py-2 text-sm font-medium bg-positive text-white rounded-lg hover:bg-positive/90 transition-colors">
+                {t('reimbursement.hrReview', 'HR Review')}
+              </button>
+              <button onClick={() => setRejectModalOpen(true)} className="px-4 py-2 text-sm font-medium bg-negative text-white rounded-lg hover:bg-negative/90 transition-colors">
+                {t('common.reject')}
+              </button>
+            </>
           )}
           {canManagerApproveExpenses && (
             <button onClick={handleManagerApproveExpenses} className="px-4 py-2 text-sm font-medium bg-positive text-white rounded-lg hover:bg-positive/90 transition-colors">
