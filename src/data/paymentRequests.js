@@ -8,6 +8,9 @@ export const PAYMENT_REQUESTS = [
     currency: 'THB',
     paymentMethod: 'transfer',
     documentType: 'KR',
+    paymentRequestType: 'supplier',
+    supplierId: 'sup-01',
+    poReference: 'PO-001',
     payee: 'บริษัท สยามอุตสาหกรรม จำกัด',
     payeeEmail: 'accounts@siamindustry.co.th',
     payeeBankId: 'bank-1',
@@ -16,6 +19,7 @@ export const PAYMENT_REQUESTS = [
     lineItems: [
       {
         wbsCostCenter: 'CC4001',
+        materialCode: 'MAT-003',
         description: 'เหล็กเส้น SD40 ขนาด 16 มม.',
         amount: 285000,
         additions: [
@@ -25,6 +29,7 @@ export const PAYMENT_REQUESTS = [
       },
       {
         wbsCostCenter: 'CC4001',
+        materialCode: 'MAT-003',
         description: 'ปูนซีเมนต์ปอร์ตแลนด์ 500 ถุง',
         amount: 95000,
         additions: [
@@ -34,7 +39,8 @@ export const PAYMENT_REQUESTS = [
       },
     ],
     totalNet: 395200,
-    concurrers: ['user-05', 'user-13'],
+    memoFiles: ['memo_construction_materials.pdf'],
+    otherFiles: ['invoice_siam_industry.pdf'],
     approvals: [
       { userId: 'user-06', action: 'submitted', date: '2026-01-10T09:00:00', comment: 'ขอชำระค่าวัสดุก่อสร้าง' },
       { userId: 'user-05', action: 'approved', date: '2026-01-11T10:30:00', comment: 'ตรวจสอบใบแจ้งหนี้แล้ว อนุมัติ' },
@@ -51,6 +57,9 @@ export const PAYMENT_REQUESTS = [
     currency: 'THB',
     paymentMethod: 'companyCheque',
     documentType: 'KR',
+    paymentRequestType: 'supplier',
+    supplierId: 'sup-03',
+    poReference: 'PO-003',
     payee: 'บริษัท โกลบอล ชิปปิ้ง จำกัด',
     payeeEmail: 'finance@globalshipping.co.th',
     payeeBankId: 'bank-3',
@@ -59,6 +68,7 @@ export const PAYMENT_REQUESTS = [
     lineItems: [
       {
         wbsCostCenter: 'CC3001',
+        materialCode: 'MAT-006',
         description: 'ค่าระวางเรือ Container 40ft x 5 ตู้',
         amount: 750000,
         additions: [
@@ -68,7 +78,8 @@ export const PAYMENT_REQUESTS = [
       },
     ],
     totalNet: 780000,
-    concurrers: ['user-05'],
+    memoFiles: ['memo_shipping_dec.pdf'],
+    otherFiles: [],
     approvals: [
       { userId: 'user-13', action: 'submitted', date: '2026-01-12T14:00:00', comment: 'ขอชำระค่าระวางเรือ' },
       { userId: 'user-05', action: 'approved', date: '2026-01-13T09:15:00', comment: 'อนุมัติ' },
@@ -86,6 +97,9 @@ export const PAYMENT_REQUESTS = [
     currency: 'THB',
     paymentMethod: 'transfer',
     documentType: 'KR',
+    paymentRequestType: 'supplier',
+    supplierId: 'sup-04',
+    poReference: 'PO-004',
     payee: 'บริษัท ไอที โซลูชั่นส์ จำกัด',
     payeeEmail: 'billing@itsolutions.co.th',
     payeeBankId: 'bank-2',
@@ -94,6 +108,7 @@ export const PAYMENT_REQUESTS = [
     lineItems: [
       {
         wbsCostCenter: 'CC2001',
+        materialCode: 'MAT-002',
         description: 'ค่าบริการ AWS Cloud Server (3 เดือน)',
         amount: 180000,
         additions: [
@@ -103,6 +118,7 @@ export const PAYMENT_REQUESTS = [
       },
       {
         wbsCostCenter: 'CC2001',
+        materialCode: 'MAT-002',
         description: 'License Microsoft 365 Business x 50 users',
         amount: 120000,
         additions: [
@@ -112,7 +128,8 @@ export const PAYMENT_REQUESTS = [
       },
     ],
     totalNet: 312000,
-    concurrers: ['user-09'],
+    memoFiles: [],
+    otherFiles: ['quote_it_solutions.pdf'],
     approvals: [
       { userId: 'user-07', action: 'submitted', date: '2026-01-18T10:00:00', comment: 'ขอชำระค่า Cloud และ License' },
     ],
@@ -128,6 +145,7 @@ export const PAYMENT_REQUESTS = [
     currency: 'THB',
     paymentMethod: 'transfer',
     documentType: 'KR',
+    paymentRequestType: 'supplier',
     payee: 'บริษัท คลีนเซอร์วิส จำกัด',
     payeeEmail: 'info@cleanservice.co.th',
     payeeBankId: 'bank-4',
@@ -136,6 +154,7 @@ export const PAYMENT_REQUESTS = [
     lineItems: [
       {
         wbsCostCenter: 'CC1001',
+        materialCode: 'MAT-005',
         description: 'ค่าบริการทำความสะอาดรายเดือน',
         amount: 45000,
         additions: [
@@ -145,7 +164,8 @@ export const PAYMENT_REQUESTS = [
       },
     ],
     totalNet: 46800,
-    concurrers: ['user-01'],
+    memoFiles: [],
+    otherFiles: [],
     approvals: [
       { userId: 'user-11', action: 'submitted', date: '2026-01-05T09:30:00', comment: 'ขอชำระค่าทำความสะอาด' },
       { userId: 'user-01', action: 'approved', date: '2026-01-06T11:00:00', comment: 'อนุมัติ' },
@@ -163,6 +183,7 @@ export const PAYMENT_REQUESTS = [
     currency: 'THB',
     paymentMethod: 'cashierCheque',
     documentType: 'KR',
+    paymentRequestType: 'supplier',
     payee: 'บริษัท มารีนเทค จำกัด',
     payeeEmail: 'payment@marinetech.co.th',
     payeeBankId: 'bank-1',
@@ -171,6 +192,7 @@ export const PAYMENT_REQUESTS = [
     lineItems: [
       {
         wbsCostCenter: 'CC3001',
+        materialCode: 'MAT-003',
         description: 'ค่าซ่อมเครื่องยนต์หลัก',
         amount: 450000,
         additions: [
@@ -180,6 +202,7 @@ export const PAYMENT_REQUESTS = [
       },
       {
         wbsCostCenter: 'CC3001',
+        materialCode: 'MAT-003',
         description: 'ค่าอะไหล่เครื่องยนต์',
         amount: 280000,
         additions: [
@@ -189,7 +212,8 @@ export const PAYMENT_REQUESTS = [
       },
     ],
     totalNet: 759200,
-    concurrers: ['user-01', 'user-05'],
+    memoFiles: [],
+    otherFiles: ['wo_2025_1204.pdf'],
     approvals: [
       { userId: 'user-03', action: 'submitted', date: '2026-01-16T08:00:00', comment: 'ขอชำระค่าซ่อมบำรุงเรือ' },
       { userId: 'user-05', action: 'approved', date: '2026-01-17T10:00:00', comment: 'ตรวจสอบ WO แล้ว อนุมัติ' },
@@ -206,6 +230,9 @@ export const PAYMENT_REQUESTS = [
     currency: 'THB',
     paymentMethod: 'transfer',
     documentType: 'KR',
+    paymentRequestType: 'supplier',
+    supplierId: 'sup-04',
+    poReference: 'PO-006',
     payee: 'บริษัท ซอฟต์แวร์พลัส จำกัด',
     payeeEmail: 'ar@softwareplus.co.th',
     payeeBankId: 'bank-2',
@@ -214,6 +241,7 @@ export const PAYMENT_REQUESTS = [
     lineItems: [
       {
         wbsCostCenter: 'CC2001',
+        materialCode: 'MAT-005',
         description: 'ค่าพัฒนาระบบ ERP งวดที่ 3 (40%)',
         amount: 1200000,
         additions: [
@@ -224,7 +252,8 @@ export const PAYMENT_REQUESTS = [
       },
     ],
     totalNet: 1188000,
-    concurrers: ['user-09', 'user-10'],
+    memoFiles: ['memo_erp_phase2.pdf'],
+    otherFiles: ['acceptance_report.pdf'],
     approvals: [
       { userId: 'user-15', action: 'submitted', date: '2026-01-14T11:00:00', comment: 'ขอชำระค่าพัฒนาระบบ ERP' },
       { userId: 'user-09', action: 'approved', date: '2026-01-15T09:00:00', comment: 'ตรวจรับงานแล้ว อนุมัติชำระ' },
@@ -241,6 +270,7 @@ export const PAYMENT_REQUESTS = [
     currency: 'THB',
     paymentMethod: 'transfer',
     documentType: 'KR',
+    paymentRequestType: 'supplier',
     payee: 'บริษัท เอเชียประกันภัย จำกัด (มหาชน)',
     payeeEmail: 'premium@asiainsurance.co.th',
     payeeBankId: 'bank-3',
@@ -265,7 +295,8 @@ export const PAYMENT_REQUESTS = [
       },
     ],
     totalNet: 1300000,
-    concurrers: ['user-09'],
+    memoFiles: [],
+    otherFiles: [],
     approvals: [
       { userId: 'user-08', action: 'submitted', date: '2026-01-20T10:00:00', comment: 'ขอชำระค่าเบี้ยประกันภัยกลุ่ม' },
     ],
@@ -281,6 +312,7 @@ export const PAYMENT_REQUESTS = [
     currency: 'THB',
     paymentMethod: 'directDebit',
     documentType: 'KR',
+    paymentRequestType: 'supplier',
     payee: 'การไฟฟ้านครหลวง',
     payeeEmail: 'billing@mea.or.th',
     payeeBankId: 'bank-1',
@@ -305,7 +337,8 @@ export const PAYMENT_REQUESTS = [
       },
     ],
     totalNet: 540350,
-    concurrers: ['user-09'],
+    memoFiles: [],
+    otherFiles: [],
     approvals: [
       { userId: 'user-14', action: 'submitted', date: '2025-12-25T09:00:00', comment: 'ขอชำระค่าไฟฟ้า' },
       { userId: 'user-09', action: 'approved', date: '2025-12-26T08:30:00', comment: 'อนุมัติ' },
@@ -323,6 +356,7 @@ export const PAYMENT_REQUESTS = [
     currency: 'THB',
     paymentMethod: 'transfer',
     documentType: 'KR',
+    paymentRequestType: 'supplier',
     payee: 'สำนักงานกฎหมาย ธรรมนิติ',
     payeeEmail: 'finance@dharmniti.co.th',
     payeeBankId: 'bank-3',
@@ -331,6 +365,7 @@ export const PAYMENT_REQUESTS = [
     lineItems: [
       {
         wbsCostCenter: 'CC1001',
+        materialCode: 'MAT-005',
         description: 'ค่าที่ปรึกษากฎหมายรายเดือน ม.ค. 2026',
         amount: 200000,
         additions: [
@@ -340,7 +375,8 @@ export const PAYMENT_REQUESTS = [
       },
     ],
     totalNet: 208000,
-    concurrers: ['user-01'],
+    memoFiles: [],
+    otherFiles: [],
     approvals: [],
     status: 'draft',
     sapDocNumber: null,
@@ -353,7 +389,8 @@ export const PAYMENT_REQUESTS = [
     paymentDate: '2025-12-20',
     currency: 'THB',
     paymentMethod: 'cash',
-    documentType: 'SA',
+    documentType: 'KZ',
+    paymentRequestType: 'reimbursement',
     payee: 'ร้านค้าวัสดุท่าเรือ',
     payeeEmail: null,
     payeeBankId: null,
@@ -378,7 +415,8 @@ export const PAYMENT_REQUESTS = [
       },
     ],
     totalNet: 53500,
-    concurrers: ['user-05'],
+    memoFiles: [],
+    otherFiles: ['receipt_port_supplies.jpg'],
     approvals: [
       { userId: 'user-04', action: 'submitted', date: '2025-12-18T07:30:00', comment: 'ขอชำระค่าวัสดุซ่อมท่าเรือ เร่งด่วน' },
       { userId: 'user-05', action: 'approved', date: '2025-12-18T08:00:00', comment: 'อนุมัติ กรณีเร่งด่วน' },

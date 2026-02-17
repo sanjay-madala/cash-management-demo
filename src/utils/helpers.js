@@ -1,18 +1,3 @@
-export function getStatusColor(status) {
-  const colors = {
-    draft: 'bg-neutral/10 text-neutral',
-    pendingApproval: 'bg-critical/10 text-critical',
-    approved: 'bg-positive/10 text-positive',
-    rejected: 'bg-negative/10 text-negative',
-    returned: 'bg-critical/10 text-critical',
-    disbursed: 'bg-brand/10 text-brand',
-    cleared: 'bg-positive/10 text-positive',
-    closed: 'bg-neutral/10 text-neutral',
-    posted: 'bg-brand/10 text-brand',
-  };
-  return colors[status] || 'bg-neutral/10 text-neutral';
-}
-
 export function getInitials(firstName, lastName) {
   const first = firstName ? firstName.charAt(0).toUpperCase() : '';
   const last = lastName ? lastName.charAt(0).toUpperCase() : '';
@@ -42,4 +27,34 @@ export function sortByDate(items, field = 'createdDate', ascending = false) {
     const dateB = new Date(b[field] || 0);
     return ascending ? dateA - dateB : dateB - dateA;
   });
+}
+
+export function isWeekday(dateString) {
+  if (!dateString) return true;
+  const day = new Date(dateString).getDay();
+  return day !== 0 && day !== 6;
+}
+
+export function getStatusColor(status) {
+  const colors = {
+    draft: 'bg-neutral/10 text-neutral',
+    pendingApproval: 'bg-critical/10 text-critical',
+    submitted: 'bg-critical/10 text-critical',
+    approved: 'bg-positive/10 text-positive',
+    rejected: 'bg-negative/10 text-negative',
+    returned: 'bg-critical/10 text-critical',
+    disbursed: 'bg-brand/10 text-brand',
+    validated: 'bg-brand/10 text-brand',
+    cleared: 'bg-positive/10 text-positive',
+    closed: 'bg-neutral/10 text-neutral',
+    posted: 'bg-brand/10 text-brand',
+    tripApproved: 'bg-positive/10 text-positive',
+    tripEnded: 'bg-brand/10 text-brand',
+    hrReviewed: 'bg-positive/10 text-positive',
+    expenseSubmitted: 'bg-critical/10 text-critical',
+    managerApproved: 'bg-positive/10 text-positive',
+    paymentGenerated: 'bg-brand/10 text-brand',
+    accountingVerified: 'bg-brand/10 text-brand',
+  };
+  return colors[status] || 'bg-neutral/10 text-neutral';
 }

@@ -2,8 +2,8 @@
 
 @theme {
   /* SAP Fiori Color Tokens */
-  --color-shell: #354A5F;
-  --color-shell-light: #4A6584;
+  --color-shell: #1B2D45;
+  --color-shell-light: #2A4060;
   --color-brand: #0A6ED1;
   --color-brand-hover: #0854A0;
   --color-positive: #2B7D2B;
@@ -15,7 +15,7 @@
   /* Background tokens */
   --color-bg-primary: #F7F7F7;
   --color-bg-secondary: #FFFFFF;
-  --color-bg-shell: #354A5F;
+  --color-bg-shell: #1B2D45;
 
   /* Text tokens */
   --color-text-primary: #32363A;

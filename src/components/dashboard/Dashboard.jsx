@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Banknote, CreditCard, Receipt, Coins, Clock, Plus } from 'lucide-react';
+import { Banknote, CreditCard, Receipt, Coins, Clock, Plus, FileCheck, Plane } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { useData } from '../../context/DataContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -28,11 +28,14 @@ export default function Dashboard() {
       totalPayments: sumAmounts(state.payments),
       totalExpenses: sumAmounts(state.expenses),
       totalPettyCash: sumAmounts(state.pettyCash),
-      pendingCount: pending(state.advances) + pending(state.payments) + pending(state.expenses) + pending(state.pettyCash),
+      totalReimbursements: sumAmounts(state.reimbursements || []),
+      clearAdvanceCount: (state.clearAdvances || []).length,
+      pendingCount: pending(state.advances) + pending(state.payments) + pending(state.expenses) + pending(state.pettyCash) + pending(state.reimbursements || []),
       advanceCount: state.advances.length,
       paymentCount: state.payments.length,
       expenseCount: state.expenses.length,
       pettyCashCount: state.pettyCash.length,
+      reimbursementCount: (state.reimbursements || []).length,
     };
   }, [state]);
 
@@ -87,11 +90,15 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <StatsCard title={t('dashboard.totalAdvances')} value={formatCurrency(stats.totalAdvances, i18n.language)} subtitle={`${stats.advanceCount} records`} icon={Banknote} color="brand" />
         <StatsCard title={t('dashboard.totalPayments')} value={formatCurrency(stats.totalPayments, i18n.language)} subtitle={`${stats.paymentCount} records`} icon={CreditCard} color="positive" />
         <StatsCard title={t('dashboard.totalExpenses')} value={formatCurrency(stats.totalExpenses, i18n.language)} subtitle={`${stats.expenseCount} records`} icon={Receipt} color="critical" />
         <StatsCard title={t('dashboard.pettyCashBalance')} value={formatCurrency(stats.totalPettyCash, i18n.language)} subtitle={`${stats.pettyCashCount} records`} icon={Coins} color="neutral" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <StatsCard title={t('dashboard.reimbursements', 'Reimbursements')} value={formatCurrency(stats.totalReimbursements, i18n.language)} subtitle={`${stats.reimbursementCount} records`} icon={Plane} color="brand" />
+        <StatsCard title={t('dashboard.clearAdvances', 'Clear Advances')} value={stats.clearAdvanceCount} subtitle={`${stats.clearAdvanceCount} records`} icon={FileCheck} color="positive" />
         <StatsCard title={t('dashboard.pendingApprovals')} value={stats.pendingCount} subtitle={currentRole === 'manager' ? 'Awaiting your action' : ''} icon={Clock} color={stats.pendingCount > 0 ? 'critical' : 'neutral'} />
       </div>
 

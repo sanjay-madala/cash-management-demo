@@ -5,10 +5,17 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useData } from '../../context/DataContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { COMPANIES, BANKS, PAYMENT_METHODS, COST_CENTERS } from '../../data/constants.js';
+import { MATERIAL_CODES } from '../../data/materialCodes.js';
+import { SUPPLIERS, PURCHASE_ORDERS } from '../../data/suppliers.js';
 import { USERS } from '../../data/users.js';
 import { generateId } from '../../utils/formatters.js';
+import AttachmentList from '../common/AttachmentList.jsx';
 
 const CURRENCIES = ['THB', 'USD', 'EUR', 'SGD', 'JPY'];
+const DOC_TYPES = [
+  { id: 'KR', label: { en: 'Normal (KR)', th: 'ปกติ (KR)' } },
+  { id: 'KZ', label: { en: 'Special (KZ)', th: 'พิเศษ (KZ)' } },
+];
 
 export default function PaymentForm() {
   const { t, i18n } = useTranslation();
@@ -20,7 +27,7 @@ export default function PaymentForm() {
   const editId = searchParams.get('edit');
   const isEditing = Boolean(editId);
 
-  const managers = USERS.filter((u) => u.role === 'manager');
+  const allUsers = USERS;
 
   const [form, setForm] = useState({
     companyId: currentUser?.company || 'comp-1',
@@ -28,23 +35,26 @@ export default function PaymentForm() {
     currency: 'THB',
     paymentMethod: 'transfer',
     documentType: 'KR',
+    paymentRequestType: 'supplier',
+    requesterId: currentUser?.id || 'user-03',
     payee: '',
     payeeEmail: '',
     payeeBankId: 'bank-1',
     payeeBankAccount: '',
     paymentDetails: '',
-    concurrers: [],
+    supplierId: '',
+    poReference: '',
   });
 
   const [lineItems, setLineItems] = useState([
-    { wbsCostCenter: 'CC1001', description: '', amount: 0, additions: [{ type: 'vat', rate: 7, amount: 0 }] },
+    { wbsCostCenter: 'CC1001', materialCode: '', description: '', amount: 0, additions: [{ type: 'vat', rate: 7, amount: 0 }] },
   ]);
 
   const [hasMemo, setHasMemo] = useState(false);
   const [memo, setMemo] = useState('');
-  const [attachments, setAttachments] = useState('');
+  const [memoFiles, setMemoFiles] = useState([]);
+  const [otherFiles, setOtherFiles] = useState([]);
 
-  // Load existing record when editing
   useEffect(() => {
     if (!editId) return;
     const record = getRecordById('payment', editId);
@@ -55,32 +65,48 @@ export default function PaymentForm() {
       currency: record.currency || 'THB',
       paymentMethod: record.paymentMethod || 'transfer',
       documentType: record.documentType || 'KR',
+      paymentRequestType: record.paymentRequestType || 'supplier',
+      requesterId: record.requesterId || currentUser?.id || 'user-03',
       payee: record.payee || '',
       payeeEmail: record.payeeEmail || '',
       payeeBankId: record.payeeBankId || 'bank-1',
       payeeBankAccount: record.payeeBankAccount || '',
       paymentDetails: record.paymentDetails || '',
-      concurrers: record.concurrers || [],
+      supplierId: record.supplierId || '',
+      poReference: record.poReference || '',
     });
-    if (record.lineItems && record.lineItems.length > 0) {
-      setLineItems(record.lineItems);
-    }
-    if (record.memo) {
-      setHasMemo(true);
-      setMemo(record.memo);
-    }
-    if (record.attachments) {
-      setAttachments(record.attachments);
-    }
+    if (record.lineItems?.length > 0) setLineItems(record.lineItems);
+    if (record.memo) { setHasMemo(true); setMemo(record.memo); }
+    if (record.memoFiles) setMemoFiles(record.memoFiles);
+    if (record.otherFiles) setOtherFiles(record.otherFiles);
   }, [editId, getRecordById, currentUser]);
 
   const handleFieldChange = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => {
+      const next = { ...prev, [field]: value };
+      if (field === 'supplierId') {
+        const supplier = SUPPLIERS.find((s) => s.id === value);
+        if (supplier) {
+          next.payee = i18n.language === 'th' ? supplier.name : supplier.nameEn;
+          next.payeeBankId = supplier.bankId;
+          next.payeeBankAccount = supplier.bankAccount;
+        }
+      }
+      return next;
+    });
   };
 
   const handleLineChange = (index, field, value) => {
     setLineItems((prev) => prev.map((item, i) => {
       if (i !== index) return item;
+      if (field === 'materialCode') {
+        const mat = MATERIAL_CODES.find((m) => m.code === value);
+        if (mat) {
+          const desc = i18n.language === 'th' ? mat.description.th : mat.description.en;
+          return { ...item, materialCode: value, description: desc };
+        }
+        return { ...item, materialCode: value };
+      }
       const updated = { ...item, [field]: field === 'description' || field === 'wbsCostCenter' ? value : Number(value) || 0 };
       if (field === 'amount') {
         updated.additions = updated.additions.map((a) => ({
@@ -99,13 +125,11 @@ export default function PaymentForm() {
   };
 
   const addLine = () => {
-    setLineItems((prev) => [...prev, { wbsCostCenter: 'CC1001', description: '', amount: 0, additions: [{ type: 'vat', rate: 7, amount: 0 }] }]);
+    setLineItems((prev) => [...prev, { wbsCostCenter: 'CC1001', materialCode: '', description: '', amount: 0, additions: [{ type: 'vat', rate: 7, amount: 0 }] }]);
   };
 
   const removeLine = (index) => {
-    if (lineItems.length > 1) {
-      setLineItems((prev) => prev.filter((_, i) => i !== index));
-    }
+    if (lineItems.length > 1) setLineItems((prev) => prev.filter((_, i) => i !== index));
   };
 
   const addDeduction = (lineIdx, type) => {
@@ -124,58 +148,50 @@ export default function PaymentForm() {
     }));
   };
 
-  const calcLineNet = (item) => {
-    return item.amount + item.additions.reduce((s, a) => s + a.amount, 0);
-  };
-
+  const calcLineNet = (item) => item.amount + item.additions.reduce((s, a) => s + a.amount, 0);
   const totalNet = lineItems.reduce((sum, item) => sum + calcLineNet(item), 0);
 
-  const toggleConcurrer = (userId) => {
-    setForm((prev) => ({
-      ...prev,
-      concurrers: prev.concurrers.includes(userId)
-        ? prev.concurrers.filter((id) => id !== userId)
-        : [...prev.concurrers, userId],
-    }));
-  };
+  const supplierPOs = form.supplierId ? PURCHASE_ORDERS.filter((po) => po.supplierId === form.supplierId) : [];
 
   const handleSubmit = (asDraft) => {
     const now = new Date().toISOString();
-
     const commonFields = {
       companyId: form.companyId,
       paymentDate: form.paymentDate,
       currency: form.currency,
       paymentMethod: form.paymentMethod,
       documentType: form.documentType,
+      paymentRequestType: form.paymentRequestType,
       payee: form.payee,
       payeeEmail: form.payeeEmail,
       payeeBankId: form.paymentMethod === 'cash' ? null : form.payeeBankId,
       payeeBankAccount: form.paymentMethod === 'cash' ? null : form.payeeBankAccount,
       paymentDetails: form.paymentDetails,
+      supplierId: form.supplierId,
+      poReference: form.poReference,
       lineItems,
       totalNet,
-      concurrers: form.concurrers,
       memo: hasMemo ? memo : '',
-      attachments,
+      memoFiles,
+      otherFiles,
     };
 
     if (isEditing) {
-      const updates = {
+      dispatch({ type: 'UPDATE_RECORD', module: 'payment', id: editId, updates: {
         ...commonFields,
-        approvals: asDraft ? [] : [{ userId: currentUser?.id || 'user-03', action: 'resubmitted', date: now, comment: '' }],
+        requesterId: form.requesterId,
+        approvals: asDraft ? [] : [{ userId: currentUser?.id, action: 'resubmitted', date: now, comment: '' }],
         status: asDraft ? 'draft' : 'pendingApproval',
-      };
-      dispatch({ type: 'UPDATE_RECORD', module: 'payment', id: editId, updates });
+      } });
       navigate(`/payment/${editId}`);
     } else {
       const docNum = `PAY-2026-${String(state.payments.length + 1).padStart(4, '0')}`;
       const newRecord = {
         id: generateId(),
         docNumber: docNum,
-        requesterId: currentUser?.id || 'user-03',
+        requesterId: form.requesterId,
         ...commonFields,
-        approvals: asDraft ? [] : [{ userId: currentUser?.id || 'user-03', action: 'submitted', date: now, comment: '' }],
+        approvals: asDraft ? [] : [{ userId: currentUser?.id, action: 'submitted', date: now, comment: '' }],
         status: asDraft ? 'draft' : 'pendingApproval',
         sapDocNumber: null,
       };
@@ -201,6 +217,18 @@ export default function PaymentForm() {
             </select>
           </div>
           <div>
+            <label className={labelClass}>{t('payment.documentType', 'Document Type')}</label>
+            <select value={form.documentType} onChange={(e) => handleFieldChange('documentType', e.target.value)} className={inputClass}>
+              {DOC_TYPES.map((dt) => <option key={dt.id} value={dt.id}>{i18n.language === 'th' ? dt.label.th : dt.label.en}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelClass}>{t('payment.requester', 'Requester')}</label>
+            <select value={form.requesterId} onChange={(e) => handleFieldChange('requesterId', e.target.value)} className={inputClass}>
+              {allUsers.map((u) => <option key={u.id} value={u.id}>{i18n.language === 'th' ? `${u.firstName} ${u.lastName}` : `${u.firstNameEn} ${u.lastNameEn}`}</option>)}
+            </select>
+          </div>
+          <div>
             <label className={labelClass}>{t('payment.paymentDate')}</label>
             <input type="date" value={form.paymentDate} onChange={(e) => handleFieldChange('paymentDate', e.target.value)} className={inputClass} />
           </div>
@@ -216,6 +244,42 @@ export default function PaymentForm() {
               {PAYMENT_METHODS.map((pm) => <option key={pm.id} value={pm.id}>{i18n.language === 'th' ? pm.label.th : pm.label.en}</option>)}
             </select>
           </div>
+
+          {/* Payment Request Type */}
+          <div className="md:col-span-2 lg:col-span-3">
+            <label className={labelClass}>{t('payment.paymentRequestType', 'Payment Request Type')}</label>
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="radio" name="paymentRequestType" value="supplier" checked={form.paymentRequestType === 'supplier'} onChange={(e) => handleFieldChange('paymentRequestType', e.target.value)} className="accent-brand" />
+                {t('payment.supplierPayment', 'Supplier Payment')}
+              </label>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="radio" name="paymentRequestType" value="reimbursement" checked={form.paymentRequestType === 'reimbursement'} onChange={(e) => handleFieldChange('paymentRequestType', e.target.value)} className="accent-brand" />
+                {t('payment.employeeReimbursement', 'Employee Reimbursement')}
+              </label>
+            </div>
+          </div>
+
+          {/* Supplier mode */}
+          {form.paymentRequestType === 'supplier' && (
+            <>
+              <div>
+                <label className={labelClass}>{t('payment.supplier', 'Supplier')}</label>
+                <select value={form.supplierId} onChange={(e) => handleFieldChange('supplierId', e.target.value)} className={inputClass}>
+                  <option value="">-- Select Supplier --</option>
+                  {SUPPLIERS.map((s) => <option key={s.id} value={s.id}>{i18n.language === 'th' ? s.name : s.nameEn}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>{t('payment.poReference', 'PO Reference')}</label>
+                <select value={form.poReference} onChange={(e) => handleFieldChange('poReference', e.target.value)} className={inputClass}>
+                  <option value="">-- Select PO --</option>
+                  {supplierPOs.map((po) => <option key={po.id} value={po.poNumber}>{po.poNumber} - {po.description}</option>)}
+                </select>
+              </div>
+            </>
+          )}
+
           <div>
             <label className={labelClass}>{t('payment.payee')}</label>
             <input type="text" value={form.payee} onChange={(e) => handleFieldChange('payee', e.target.value)} className={inputClass} />
@@ -246,36 +310,30 @@ export default function PaymentForm() {
           {/* Memo */}
           <div className="md:col-span-2 lg:col-span-3">
             <label className="inline-flex items-center gap-2 text-xs font-semibold text-text-secondary mb-1 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={hasMemo}
-                onChange={(e) => setHasMemo(e.target.checked)}
-                className="rounded border-border text-brand focus:ring-brand"
-              />
+              <input type="checkbox" checked={hasMemo} onChange={(e) => setHasMemo(e.target.checked)} className="rounded border-border text-brand focus:ring-brand" />
               {t('payment.attachMemo')}
             </label>
             {hasMemo && (
-              <textarea
-                value={memo}
-                onChange={(e) => setMemo(e.target.value)}
-                rows={3}
-                placeholder={t('payment.memo')}
-                className={inputClass + ' mt-1'}
-              />
+              <textarea value={memo} onChange={(e) => setMemo(e.target.value)} rows={3} placeholder={t('payment.memo')} className={inputClass + ' mt-1'} />
             )}
           </div>
 
-          {/* Attachments */}
+          {/* Separated Attachments */}
           <div className="md:col-span-2 lg:col-span-3">
-            <label className={labelClass}>{t('payment.attachFiles')}</label>
-            <input
-              type="text"
-              value={attachments}
-              onChange={(e) => setAttachments(e.target.value)}
-              placeholder="invoice.pdf, receipt.jpg"
-              className={inputClass}
+            <AttachmentList
+              files={memoFiles}
+              onAdd={(name) => setMemoFiles((prev) => [...prev, name])}
+              onRemove={(idx) => setMemoFiles((prev) => prev.filter((_, i) => i !== idx))}
+              label={t('payment.memoFiles', 'E-Memo Files')}
             />
-            <p className="text-xs text-text-secondary mt-1">Comma-separated filenames</p>
+          </div>
+          <div className="md:col-span-2 lg:col-span-3">
+            <AttachmentList
+              files={otherFiles}
+              onAdd={(name) => setOtherFiles((prev) => [...prev, name])}
+              onRemove={(idx) => setOtherFiles((prev) => prev.filter((_, i) => i !== idx))}
+              label={t('payment.otherFiles', 'Other Files')}
+            />
           </div>
         </div>
       </div>
@@ -297,11 +355,18 @@ export default function PaymentForm() {
                   <Trash2 size={14} />
                 </button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
                   <label className={labelClass}>{t('payment.wbsCostCenter')}</label>
                   <select value={item.wbsCostCenter} onChange={(e) => handleLineChange(idx, 'wbsCostCenter', e.target.value)} className={inputClass}>
                     {COST_CENTERS.map((cc) => <option key={cc.code} value={cc.code}>{cc.code} - {cc.description}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>{t('advance.materialCode', 'Material Code')}</label>
+                  <select value={item.materialCode || ''} onChange={(e) => handleLineChange(idx, 'materialCode', e.target.value)} className={inputClass}>
+                    <option value="">--</option>
+                    {MATERIAL_CODES.map((m) => <option key={m.code} value={m.code}>{m.code}</option>)}
                   </select>
                 </div>
                 <div>
@@ -334,26 +399,6 @@ export default function PaymentForm() {
         </div>
         <div className="mt-4 text-right text-base font-bold font-mono">
           {t('payment.netPayment')}: {totalNet.toLocaleString('en-US', { minimumFractionDigits: 2 })} {form.currency}
-        </div>
-      </div>
-
-      {/* Concurrers */}
-      <div className="bg-bg-secondary rounded-lg border border-border p-6 mb-6">
-        <h2 className="text-sm font-semibold text-text-primary mb-3">{t('payment.concurrers')}</h2>
-        <div className="flex flex-wrap gap-2">
-          {managers.map((u) => (
-            <button
-              key={u.id}
-              onClick={() => toggleConcurrer(u.id)}
-              className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
-                form.concurrers.includes(u.id)
-                  ? 'border-brand bg-brand/10 text-brand font-semibold'
-                  : 'border-border text-text-secondary hover:bg-bg-primary'
-              }`}
-            >
-              {i18n.language === 'th' ? `${u.firstName} ${u.lastName}` : `${u.firstNameEn} ${u.lastNameEn}`}
-            </button>
-          ))}
         </div>
       </div>
 

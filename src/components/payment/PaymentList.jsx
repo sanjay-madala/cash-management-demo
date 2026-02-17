@@ -9,7 +9,6 @@ import StatusBadge from '../common/StatusBadge.jsx';
 import AmountDisplay from '../common/AmountDisplay.jsx';
 import SearchFilter from '../common/SearchFilter.jsx';
 import { USERS } from '../../data/users.js';
-import { COMPANIES } from '../../data/constants.js';
 import { formatDate } from '../../utils/formatters.js';
 import { filterBySearch, filterByStatus } from '../../utils/helpers.js';
 
@@ -25,7 +24,6 @@ export default function PaymentList() {
 
   const filtered = useMemo(() => {
     let items = state.payments;
-    // Role-based filtering
     if (currentRole === 'employee') {
       items = items.filter((r) => r.requesterId === currentUser?.id);
     } else if (currentRole === 'manager') {
@@ -42,6 +40,11 @@ export default function PaymentList() {
 
   const columns = [
     { key: 'docNumber', label: t('advance.docNumber'), render: (row) => <span className="font-medium text-brand">{row.docNumber}</span> },
+    { key: 'documentType', label: t('payment.documentType', 'Doc Type'), render: (row) => <span className="font-mono text-xs">{row.documentType || 'KR'}</span> },
+    {
+      key: 'paymentRequestType', label: t('payment.paymentRequestType', 'Type'),
+      render: (row) => <span className="capitalize text-xs">{row.paymentRequestType === 'reimbursement' ? t('payment.employeeReimbursement', 'Reimb.') : t('payment.supplierPayment', 'Supplier')}</span>,
+    },
     { key: 'payee', label: t('payment.payee'), render: (row) => <span className="truncate max-w-[180px] block">{row.payee}</span> },
     {
       key: 'requester', label: t('advance.requester'),
@@ -50,7 +53,6 @@ export default function PaymentList() {
         return u ? (i18n.language === 'th' ? `${u.firstName} ${u.lastName}` : `${u.firstNameEn} ${u.lastNameEn}`) : '-';
       },
     },
-    { key: 'paymentMethod', label: t('payment.paymentMethod'), render: (row) => <span className="capitalize">{t(`payment.${row.paymentMethod}`, { defaultValue: row.paymentMethod })}</span> },
     { key: 'totalNet', label: t('payment.netPayment'), render: (row) => <AmountDisplay amount={row.totalNet} />, cellClassName: 'text-right' },
     { key: 'paymentDate', label: t('payment.paymentDate'), render: (row) => formatDate(row.paymentDate, i18n.language) },
     { key: 'status', label: t('common.status'), render: (row) => <StatusBadge status={row.status} /> },

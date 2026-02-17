@@ -1,6 +1,8 @@
 import { createContext, useContext, useReducer, useCallback, useMemo } from 'react';
 import { ADVANCE_REQUESTS } from '../data/advanceRequests.js';
 import { PAYMENT_REQUESTS } from '../data/paymentRequests.js';
+import { CLEAR_ADVANCES } from '../data/clearAdvances.js';
+import { REIMBURSEMENTS } from '../data/reimbursements.js';
 import { expenses as initialExpenses } from '../data/expenses.js';
 import { pettyCash as initialPettyCash } from '../data/pettyCash.js';
 import { reconciliations as initialReconciliations } from '../data/reconciliations.js';
@@ -10,6 +12,8 @@ const DataContext = createContext(null);
 const initialState = {
   advances: ADVANCE_REQUESTS,
   payments: PAYMENT_REQUESTS,
+  clearAdvances: CLEAR_ADVANCES,
+  reimbursements: REIMBURSEMENTS,
   expenses: initialExpenses,
   pettyCash: initialPettyCash,
   reconciliations: initialReconciliations,
@@ -21,6 +25,11 @@ function getModuleKey(module) {
     advances: 'advances',
     payment: 'payments',
     payments: 'payments',
+    clearAdvance: 'clearAdvances',
+    clearAdvances: 'clearAdvances',
+    'clear-advance': 'clearAdvances',
+    reimbursement: 'reimbursements',
+    reimbursements: 'reimbursements',
     expense: 'expenses',
     expenses: 'expenses',
     pettyCash: 'pettyCash',
@@ -60,7 +69,7 @@ function dataReducer(state, action) {
       const key = getModuleKey(action.module);
       return {
         ...state,
-        [key]: [...state[key], action.record],
+        [key]: [...(state[key] || []), action.record],
       };
     }
     case 'UPDATE_RECORD': {
@@ -165,7 +174,8 @@ export function DataProvider({ children }) {
       pending(state.advances) +
       pending(state.payments) +
       pending(state.expenses) +
-      pending(state.pettyCash)
+      pending(state.pettyCash) +
+      pending(state.reimbursements || [])
     );
   }, [state]);
 

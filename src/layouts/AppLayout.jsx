@@ -9,6 +9,7 @@ import {
   Coins,
   Scale,
   FileText,
+  Plane,
   Menu,
   X,
   ChevronDown,
@@ -22,6 +23,7 @@ const navItems = [
   { path: '/payment', icon: CreditCard, labelKey: 'nav.paymentRequest' },
   { path: '/expense', icon: Receipt, labelKey: 'nav.expenseSystem' },
   { path: '/petty-cash', icon: Coins, labelKey: 'nav.pettyCash' },
+  { path: '/reimbursement', icon: Plane, labelKey: 'nav.reimbursement' },
   { path: '/reconciliation', icon: Scale, labelKey: 'nav.reconciliation', accountingOnly: true },
   { path: '/sap-documents', icon: FileText, labelKey: 'nav.sapDocuments', accountingOnly: true },
 ];

@@ -77,13 +77,22 @@ export const COST_CENTERS = [
 export const STATUSES = {
   draft: { color: 'gray', bg: '#F3F4F6', text: '#374151' },
   pendingApproval: { color: 'amber', bg: '#FEF3C7', text: '#92400E' },
+  submitted: { color: 'amber', bg: '#FEF3C7', text: '#92400E' },
   approved: { color: 'green', bg: '#D1FAE5', text: '#065F46' },
   rejected: { color: 'red', bg: '#FEE2E2', text: '#991B1B' },
   returned: { color: 'orange', bg: '#FFEDD5', text: '#9A3412' },
   disbursed: { color: 'blue', bg: '#DBEAFE', text: '#1E40AF' },
+  validated: { color: 'blue', bg: '#DBEAFE', text: '#1E40AF' },
   cleared: { color: 'teal', bg: '#CCFBF1', text: '#115E59' },
   closed: { color: 'slate', bg: '#E2E8F0', text: '#334155' },
   posted: { color: 'purple', bg: '#EDE9FE', text: '#5B21B6' },
+  tripApproved: { color: 'green', bg: '#D1FAE5', text: '#065F46' },
+  tripEnded: { color: 'blue', bg: '#DBEAFE', text: '#1E40AF' },
+  hrReviewed: { color: 'teal', bg: '#CCFBF1', text: '#115E59' },
+  expenseSubmitted: { color: 'amber', bg: '#FEF3C7', text: '#92400E' },
+  managerApproved: { color: 'green', bg: '#D1FAE5', text: '#065F46' },
+  paymentGenerated: { color: 'blue', bg: '#DBEAFE', text: '#1E40AF' },
+  accountingVerified: { color: 'purple', bg: '#EDE9FE', text: '#5B21B6' },
 };
 
 export const PAYMENT_METHODS = [

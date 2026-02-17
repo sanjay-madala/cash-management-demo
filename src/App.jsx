@@ -2,13 +2,17 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { DataProvider } from './context/DataContext.jsx';
 import { SAPProvider } from './context/SAPContext.jsx';
+import { ToastProvider } from './context/ToastContext.jsx';
 import AppLayout from './layouts/AppLayout.jsx';
+import ToastContainer from './components/common/ToastContainer.jsx';
 import './i18n';
 
 import Dashboard from './components/dashboard/Dashboard.jsx';
 import AdvanceList from './components/advance/AdvanceList.jsx';
 import AdvanceForm from './components/advance/AdvanceForm.jsx';
 import AdvanceDetail from './components/advance/AdvanceDetail.jsx';
+import ClearAdvanceForm from './components/advance/ClearAdvanceForm.jsx';
+import ClearAdvanceDetail from './components/advance/ClearAdvanceDetail.jsx';
 import PaymentList from './components/payment/PaymentList.jsx';
 import PaymentForm from './components/payment/PaymentForm.jsx';
 import PaymentDetail from './components/payment/PaymentDetail.jsx';
@@ -19,8 +23,11 @@ import PettyCashList from './components/petty-cash/PettyCashList.jsx';
 import PettyCashForm from './components/petty-cash/PettyCashForm.jsx';
 import PettyCashDetail from './components/petty-cash/PettyCashDetail.jsx';
 import ReconciliationList from './components/reconciliation/ReconciliationList.jsx';
-
 import ReconciliationDetail from './components/reconciliation/ReconciliationDetail.jsx';
+import ReimbursementList from './components/reimbursement/ReimbursementList.jsx';
+import TripRequestForm from './components/reimbursement/TripRequestForm.jsx';
+import ExpenseRecordForm from './components/reimbursement/ExpenseRecordForm.jsx';
+import ReimbursementDetail from './components/reimbursement/ReimbursementDetail.jsx';
 import SAPDocumentLog from './components/sap/SAPDocumentLog.jsx';
 
 export default function App() {
@@ -29,26 +36,35 @@ export default function App() {
       <AuthProvider>
         <DataProvider>
           <SAPProvider>
-            <Routes>
-              <Route element={<AppLayout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="advance" element={<AdvanceList />} />
-                <Route path="advance/new" element={<AdvanceForm />} />
-                <Route path="advance/:id" element={<AdvanceDetail />} />
-                <Route path="payment" element={<PaymentList />} />
-                <Route path="payment/new" element={<PaymentForm />} />
-                <Route path="payment/:id" element={<PaymentDetail />} />
-                <Route path="expense" element={<ExpenseList />} />
-                <Route path="expense/new" element={<ExpenseForm />} />
-                <Route path="expense/:id" element={<ExpenseDetail />} />
-                <Route path="petty-cash" element={<PettyCashList />} />
-                <Route path="petty-cash/new" element={<PettyCashForm />} />
-                <Route path="petty-cash/:id" element={<PettyCashDetail />} />
-                <Route path="reconciliation" element={<ReconciliationList />} />
-                <Route path="reconciliation/:id" element={<ReconciliationDetail />} />
-                <Route path="sap-documents" element={<SAPDocumentLog />} />
-              </Route>
-            </Routes>
+            <ToastProvider>
+              <Routes>
+                <Route element={<AppLayout />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="advance" element={<AdvanceList />} />
+                  <Route path="advance/new" element={<AdvanceForm />} />
+                  <Route path="advance/:id" element={<AdvanceDetail />} />
+                  <Route path="advance/:id/clear" element={<ClearAdvanceForm />} />
+                  <Route path="advance/:advanceId/clear/:clearId" element={<ClearAdvanceDetail />} />
+                  <Route path="payment" element={<PaymentList />} />
+                  <Route path="payment/new" element={<PaymentForm />} />
+                  <Route path="payment/:id" element={<PaymentDetail />} />
+                  <Route path="expense" element={<ExpenseList />} />
+                  <Route path="expense/new" element={<ExpenseForm />} />
+                  <Route path="expense/:id" element={<ExpenseDetail />} />
+                  <Route path="petty-cash" element={<PettyCashList />} />
+                  <Route path="petty-cash/new" element={<PettyCashForm />} />
+                  <Route path="petty-cash/:id" element={<PettyCashDetail />} />
+                  <Route path="reconciliation" element={<ReconciliationList />} />
+                  <Route path="reconciliation/:id" element={<ReconciliationDetail />} />
+                  <Route path="reimbursement" element={<ReimbursementList />} />
+                  <Route path="reimbursement/new" element={<TripRequestForm />} />
+                  <Route path="reimbursement/:id" element={<ReimbursementDetail />} />
+                  <Route path="reimbursement/:id/expenses" element={<ExpenseRecordForm />} />
+                  <Route path="sap-documents" element={<SAPDocumentLog />} />
+                </Route>
+              </Routes>
+              <ToastContainer />
+            </ToastProvider>
           </SAPProvider>
         </DataProvider>
       </AuthProvider>
