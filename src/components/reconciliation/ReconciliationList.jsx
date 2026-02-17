@@ -24,6 +24,9 @@ export default function ReconciliationList() {
 
   const [search, setSearch] = useState('');
   const [companyFilter, setCompanyFilter] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [advanceTypeFilter, setAdvanceTypeFilter] = useState('all');
 
   if (currentRole !== 'accounting') {
     return (
@@ -51,6 +54,7 @@ export default function ReconciliationList() {
         requesterName: getUserName(clr.requesterId, i18n.language),
         payeeName: getUserName(advance.cashReceiverId, i18n.language),
         companyId: advance.companyId,
+        advanceType: advance.advanceType,
         advanceAmount: clr.advanceAmount,
         totalExpenses: clr.totalExpenses,
         settlement: clr.settlement * (clr.settlementType === 'deficit' ? -1 : 1),
@@ -71,6 +75,7 @@ export default function ReconciliationList() {
           requesterName: getUserName(adv.requesterId, i18n.language),
           payeeName: getUserName(adv.cashReceiverId, i18n.language),
           companyId: adv.companyId,
+          advanceType: adv.advanceType,
           advanceAmount: adv.totalAmount,
           totalExpenses: 0,
           settlement: adv.totalAmount,
@@ -88,12 +93,21 @@ export default function ReconciliationList() {
     if (companyFilter !== 'all') {
       items = items.filter((row) => row.companyId === companyFilter);
     }
+    if (advanceTypeFilter !== 'all') {
+      items = items.filter((row) => row.advanceType === advanceTypeFilter);
+    }
+    if (dateFrom) {
+      items = items.filter((row) => row.date >= dateFrom);
+    }
+    if (dateTo) {
+      items = items.filter((row) => row.date <= dateTo + 'T23:59:59');
+    }
     if (search.trim()) {
       const term = search.trim().toLowerCase();
       items = items.filter((row) => row.docNumber?.toLowerCase().includes(term) || row.requesterName?.toLowerCase().includes(term));
     }
     return items;
-  }, [rows, companyFilter, search]);
+  }, [rows, companyFilter, advanceTypeFilter, dateFrom, dateTo, search]);
 
   const columns = [
     { key: 'docNumber', label: t('advance.docNumber'), render: (row) => <span className="font-medium text-brand">{row.docNumber}</span> },
@@ -111,13 +125,30 @@ export default function ReconciliationList() {
       </div>
 
       <div className="bg-bg-secondary rounded-lg border border-border p-4 mb-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1">{t('advance.company')}</label>
             <select value={companyFilter} onChange={(e) => setCompanyFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-bg-primary text-text-primary focus:outline-none focus:ring-1 focus:ring-brand">
               <option value="all">{t('common.all', 'All')}</option>
               {COMPANIES.map((c) => <option key={c.id} value={c.id}>{i18n.language === 'th' ? c.name.th : c.name.en} ({c.code})</option>)}
             </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-text-secondary mb-1">{t('advance.advanceType')}</label>
+            <select value={advanceTypeFilter} onChange={(e) => setAdvanceTypeFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-bg-primary text-text-primary focus:outline-none focus:ring-1 focus:ring-brand">
+              <option value="all">{t('common.all', 'All')}</option>
+              <option value="weekly">Weekly</option>
+              <option value="driver">Driver</option>
+              <option value="general">General</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-text-secondary mb-1">{t('common.dateFrom', 'Date From')}</label>
+            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-bg-primary text-text-primary focus:outline-none focus:ring-1 focus:ring-brand" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-text-secondary mb-1">{t('common.dateTo', 'Date To')}</label>
+            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-bg-primary text-text-primary focus:outline-none focus:ring-1 focus:ring-brand" />
           </div>
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1">{t('common.search')}</label>

@@ -27,6 +27,9 @@ export default function ClearAdvanceForm() {
   const [expenses, setExpenses] = useState([
     { id: generateId(), materialCode: '', description: '', amount: 0, vatRate: 7, whtRate: 0, attachments: [] },
   ]);
+  const [bankSlipFiles, setBankSlipFiles] = useState([]);
+  const [transferRef, setTransferRef] = useState('');
+  const [transferDate, setTransferDate] = useState('');
 
   if (!advance || advance.status !== 'disbursed') {
     return (
@@ -86,7 +89,9 @@ export default function ClearAdvanceForm() {
       advanceAmount: advance.totalAmount,
       settlement: Math.abs(settlement),
       settlementType: isSurplus ? 'surplus' : isDeficit ? 'deficit' : 'exact',
-      bankSlip: '',
+      bankSlip: isSurplus ? bankSlipFiles : [],
+      transferRef: isSurplus ? transferRef : '',
+      transferDate: isSurplus ? transferDate : '',
       approvals: [
         { userId: currentUser?.id, action: 'submitted', date: now, comment: 'Submitted clear advance' },
       ],
@@ -238,6 +243,29 @@ export default function ClearAdvanceForm() {
               </div>
             )}
           </div>
+
+          {/* Bank Slip for surplus return */}
+          {isSurplus && (
+            <div className="bg-bg-secondary rounded-lg border border-border p-5">
+              <h2 className="text-sm font-semibold text-text-primary mb-4">{t('clearAdvance.bankTransferInfo', 'Bank Transfer Information')}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-xs font-semibold text-text-secondary mb-1">{t('clearAdvance.transferRef', 'Transfer Reference No.')}</label>
+                  <input type="text" value={transferRef} onChange={(e) => setTransferRef(e.target.value)} className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-bg-primary focus:outline-none focus:ring-1 focus:ring-brand" placeholder="e.g. TRF-20260115-001" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-text-secondary mb-1">{t('clearAdvance.transferDate', 'Transfer Date')}</label>
+                  <input type="date" value={transferDate} onChange={(e) => setTransferDate(e.target.value)} className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-bg-primary focus:outline-none focus:ring-1 focus:ring-brand" />
+                </div>
+              </div>
+              <AttachmentList
+                files={bankSlipFiles}
+                onAdd={(name) => setBankSlipFiles((prev) => [...prev, name])}
+                onRemove={(idx) => setBankSlipFiles((prev) => prev.filter((_, i) => i !== idx))}
+                label={t('clearAdvance.bankSlip', 'Bank Slip / Transfer Receipt')}
+              />
+            </div>
+          )}
 
           <div className="flex justify-between">
             <button onClick={() => setStep(2)} className="px-4 py-2 text-sm text-text-primary border border-border rounded-lg hover:bg-bg-primary">

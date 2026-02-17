@@ -12,6 +12,8 @@ import { generateId } from '../../utils/formatters.js';
 import AttachmentList from '../common/AttachmentList.jsx';
 
 const CURRENCIES = ['THB', 'USD', 'EUR', 'SGD', 'JPY'];
+const VAT_OPTIONS = [0, 7];
+const WHT_OPTIONS = [0, 1, 2, 3, 5];
 const DOC_TYPES = [
   { id: 'KR', label: { en: 'Normal (KR)', th: 'ปกติ (KR)' } },
   { id: 'KZ', label: { en: 'Special (KZ)', th: 'พิเศษ (KZ)' } },
@@ -47,7 +49,7 @@ export default function PaymentForm() {
   });
 
   const [lineItems, setLineItems] = useState([
-    { wbsCostCenter: 'CC1001', materialCode: '', description: '', amount: 0, additions: [{ type: 'vat', rate: 7, amount: 0 }] },
+    { wbsCostCenter: 'CC1001', materialCode: '', description: '', amount: 0, vatRate: 7, whtRate: 0 },
   ]);
 
   const [hasMemo, setHasMemo] = useState(false);
@@ -75,7 +77,16 @@ export default function PaymentForm() {
       supplierId: record.supplierId || '',
       poReference: record.poReference || '',
     });
-    if (record.lineItems?.length > 0) setLineItems(record.lineItems);
+    if (record.lineItems?.length > 0) {
+      setLineItems(record.lineItems.map((li) => ({
+        wbsCostCenter: li.wbsCostCenter || 'CC1001',
+        materialCode: li.materialCode || '',
+        description: li.description || '',
+        amount: li.amount || 0,
+        vatRate: li.vatRate ?? 7,
+        whtRate: li.whtRate ?? 0,
+      })));
+    }
     if (record.memo) { setHasMemo(true); setMemo(record.memo); }
     if (record.memoFiles) setMemoFiles(record.memoFiles);
     if (record.otherFiles) setOtherFiles(record.otherFiles);
@@ -103,52 +114,27 @@ export default function PaymentForm() {
         const mat = MATERIAL_CODES.find((m) => m.code === value);
         if (mat) {
           const desc = i18n.language === 'th' ? mat.description.th : mat.description.en;
-          return { ...item, materialCode: value, description: desc };
+          return { ...item, materialCode: value, description: desc, vatRate: mat.vatRate, whtRate: mat.whtRate };
         }
         return { ...item, materialCode: value };
       }
-      const updated = { ...item, [field]: field === 'description' || field === 'wbsCostCenter' ? value : Number(value) || 0 };
-      if (field === 'amount') {
-        updated.additions = updated.additions.map((a) => ({
-          ...a,
-          amount: a.type === 'vat'
-            ? Math.round(updated.amount * (a.rate / 100))
-            : a.type === 'wht'
-              ? -Math.round(updated.amount * (a.rate / 100))
-              : a.type === 'retention'
-                ? -Math.round(updated.amount * (a.rate / 100))
-                : a.amount,
-        }));
-      }
-      return updated;
+      return { ...item, [field]: field === 'description' || field === 'wbsCostCenter' ? value : Number(value) || 0 };
     }));
   };
 
   const addLine = () => {
-    setLineItems((prev) => [...prev, { wbsCostCenter: 'CC1001', materialCode: '', description: '', amount: 0, additions: [{ type: 'vat', rate: 7, amount: 0 }] }]);
+    setLineItems((prev) => [...prev, { wbsCostCenter: 'CC1001', materialCode: '', description: '', amount: 0, vatRate: 7, whtRate: 0 }]);
   };
 
   const removeLine = (index) => {
     if (lineItems.length > 1) setLineItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const addDeduction = (lineIdx, type) => {
-    const rate = type === 'vat' ? 7 : type === 'wht' ? 3 : type === 'retention' ? 5 : 0;
-    setLineItems((prev) => prev.map((item, i) => {
-      if (i !== lineIdx) return item;
-      const amount = type === 'vat' ? Math.round(item.amount * (rate / 100)) : -Math.round(item.amount * (rate / 100));
-      return { ...item, additions: [...item.additions, { type, rate, amount }] };
-    }));
+  const calcLineNet = (item) => {
+    const vat = item.amount * ((item.vatRate || 0) / 100);
+    const wht = item.amount * ((item.whtRate || 0) / 100);
+    return item.amount + vat - wht;
   };
-
-  const removeAddition = (lineIdx, addIdx) => {
-    setLineItems((prev) => prev.map((item, i) => {
-      if (i !== lineIdx) return item;
-      return { ...item, additions: item.additions.filter((_, j) => j !== addIdx) };
-    }));
-  };
-
-  const calcLineNet = (item) => item.amount + item.additions.reduce((s, a) => s + a.amount, 0);
   const totalNet = lineItems.reduce((sum, item) => sum + calcLineNet(item), 0);
 
   const supplierPOs = form.supplierId ? PURCHASE_ORDERS.filter((po) => po.supplierId === form.supplierId) : [];
@@ -355,7 +341,7 @@ export default function PaymentForm() {
                   <Trash2 size={14} />
                 </button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <div>
                   <label className={labelClass}>{t('payment.wbsCostCenter')}</label>
                   <select value={item.wbsCostCenter} onChange={(e) => handleLineChange(idx, 'wbsCostCenter', e.target.value)} className={inputClass}>
@@ -377,18 +363,17 @@ export default function PaymentForm() {
                   <label className={labelClass}>{t('common.amount')}</label>
                   <input type="number" value={item.amount} onChange={(e) => handleLineChange(idx, 'amount', e.target.value)} className={inputClass} />
                 </div>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2 items-center">
-                {item.additions.map((add, addIdx) => (
-                  <span key={addIdx} className="inline-flex items-center gap-1 px-2 py-1 bg-bg-primary rounded text-xs">
-                    {add.type.toUpperCase()} {add.rate}% = {add.amount.toLocaleString()}
-                    <button onClick={() => removeAddition(idx, addIdx)} className="ml-1 text-negative hover:text-negative/70"><Trash2 size={10} /></button>
-                  </span>
-                ))}
-                <div className="flex gap-1">
-                  <button onClick={() => addDeduction(idx, 'vat')} className="px-2 py-0.5 text-xs border border-border rounded hover:bg-bg-primary">+VAT</button>
-                  <button onClick={() => addDeduction(idx, 'wht')} className="px-2 py-0.5 text-xs border border-border rounded hover:bg-bg-primary">+WHT</button>
-                  <button onClick={() => addDeduction(idx, 'retention')} className="px-2 py-0.5 text-xs border border-border rounded hover:bg-bg-primary">+Retention</button>
+                <div>
+                  <label className={labelClass}>{t('advance.vat')} %</label>
+                  <select value={item.vatRate || 0} onChange={(e) => handleLineChange(idx, 'vatRate', e.target.value)} className={inputClass}>
+                    {VAT_OPTIONS.map((v) => <option key={v} value={v}>{v}%</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>{t('advance.wht')} %</label>
+                  <select value={item.whtRate || 0} onChange={(e) => handleLineChange(idx, 'whtRate', e.target.value)} className={inputClass}>
+                    {WHT_OPTIONS.map((v) => <option key={v} value={v}>{v}%</option>)}
+                  </select>
                 </div>
               </div>
               <div className="mt-2 text-right text-sm font-mono font-medium">

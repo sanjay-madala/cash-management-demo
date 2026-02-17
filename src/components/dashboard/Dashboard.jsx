@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { Banknote, CreditCard, Receipt, Coins, Clock, Plus, FileCheck, Plane } from 'lucide-react';
+
+import { Banknote, CreditCard, Receipt, Coins, Clock, FileCheck, Plane } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { useData } from '../../context/DataContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -17,7 +17,7 @@ export default function Dashboard() {
   const { t, i18n } = useTranslation();
   const { state } = useData();
   const { currentRole } = useAuth();
-  const navigate = useNavigate();
+
 
   const stats = useMemo(() => {
     const sumAmounts = (items) => items.reduce((s, i) => s + (i.totalAmount || i.totalNet || 0), 0);
@@ -80,13 +80,6 @@ export default function Dashboard() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-text-primary">{t('dashboard.title')}</h1>
-        {currentRole === 'employee' && (
-          <div className="flex gap-2">
-            <button onClick={() => navigate('/advance/new')} className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors">
-              <Plus size={14} /> {t('advance.newAdvance')}
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Stats Cards */}

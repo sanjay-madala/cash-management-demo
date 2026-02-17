@@ -19,7 +19,7 @@ export default function AdvanceDetail() {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getRecordById, dispatch } = useData();
+  const { state, getRecordById, dispatch } = useData();
   const { currentUser, currentRole } = useAuth();
   const { postToSAP, getSAPDocument } = useSAP();
   const { addToast } = useToast();
@@ -30,6 +30,7 @@ export default function AdvanceDetail() {
 
   const record = getRecordById('advance', id);
   const sapDoc = getSAPDocument(id);
+  const clearAdvances = (state.clearAdvances || []).filter((c) => c.advanceId === id);
 
   if (!record) {
     return (
@@ -264,6 +265,43 @@ export default function AdvanceDetail() {
                   </>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Clear Advances */}
+          {clearAdvances.length > 0 && (
+            <div className="bg-bg-secondary rounded-lg border border-border p-5">
+              <h2 className="text-sm font-semibold text-text-primary mb-4">{t('clearAdvance.list', 'Clear Advances')}</h2>
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left text-xs font-semibold text-text-secondary py-2">{t('advance.docNumber')}</th>
+                    <th className="text-right text-xs font-semibold text-text-secondary py-2">{t('reconciliation.totalExpenses')}</th>
+                    <th className="text-right text-xs font-semibold text-text-secondary py-2">{t('reconciliation.settlement')}</th>
+                    <th className="text-left text-xs font-semibold text-text-secondary py-2">{t('common.status')}</th>
+                    <th className="text-left text-xs font-semibold text-text-secondary py-2">{t('common.date')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clearAdvances.map((clr) => (
+                    <tr
+                      key={clr.id}
+                      className="border-b border-border hover:bg-bg-primary cursor-pointer transition-colors"
+                      onClick={() => navigate(`/advance/${id}/clear/${clr.id}`)}
+                    >
+                      <td className="py-2.5 text-sm font-medium text-brand">{clr.advanceDocNumber}</td>
+                      <td className="py-2.5 text-sm text-right font-mono"><AmountDisplay amount={clr.totalExpenses} /></td>
+                      <td className="py-2.5 text-sm text-right font-mono">
+                        <span className={clr.settlementType === 'surplus' ? 'text-positive' : clr.settlementType === 'deficit' ? 'text-negative' : ''}>
+                          {clr.settlementType === 'surplus' ? '+' : clr.settlementType === 'deficit' ? '-' : ''}{clr.settlement?.toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="py-2.5"><StatusBadge status={clr.status} /></td>
+                      <td className="py-2.5 text-sm text-text-secondary">{formatDate(clr.createdDate, i18n.language)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

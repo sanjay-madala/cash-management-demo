@@ -8,16 +8,26 @@ import StatusBadge from '../common/StatusBadge.jsx';
 import AmountDisplay from '../common/AmountDisplay.jsx';
 import ApprovalTimeline from '../common/ApprovalTimeline.jsx';
 import AttachmentList from '../common/AttachmentList.jsx';
+import { USERS } from '../../data/users.js';
+import { COMPANIES } from '../../data/constants.js';
+import { formatDate } from '../../utils/formatters.js';
 
 export default function ClearAdvanceDetail() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id, clearId } = useParams();
   const navigate = useNavigate();
-  const { state, dispatch } = useData();
+  const { state, dispatch, getRecordById } = useData();
   const { currentUser, currentRole } = useAuth();
   const { addToast } = useToast();
 
   const clearRecord = state.clearAdvances?.find((c) => c.id === clearId);
+  const advance = getRecordById('advance', id);
+
+  const getName = (userId) => {
+    const user = USERS.find((u) => u.id === userId);
+    if (!user) return '-';
+    return i18n.language === 'th' ? `${user.firstName} ${user.lastName}` : `${user.firstNameEn} ${user.lastNameEn}`;
+  };
 
   if (!clearRecord) {
     return (
@@ -99,6 +109,25 @@ export default function ClearAdvanceDetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-4">
+          {/* Advance Request Information */}
+          {advance && (
+            <div className="bg-bg-secondary rounded-lg border border-border p-5">
+              <h2 className="text-sm font-semibold text-text-primary mb-4">{t('clearAdvance.advanceInfo', 'Advance Request Information')}</h2>
+              <div className="grid grid-cols-2 gap-y-3 gap-x-6 text-sm">
+                <div><span className="text-text-secondary">{t('advance.docNumber')}:</span> <span className="font-medium ml-1 text-brand">{advance.docNumber}</span></div>
+                <div><span className="text-text-secondary">{t('advance.requester')}:</span> <span className="font-medium ml-1">{getName(advance.requesterId)}</span></div>
+                <div><span className="text-text-secondary">{t('advance.company')}:</span> <span className="font-medium ml-1">{(() => { const c = COMPANIES.find((co) => co.id === advance.companyId); return c ? (i18n.language === 'th' ? c.name.th : c.name.en) : '-'; })()}</span></div>
+                <div><span className="text-text-secondary">{t('advance.advanceType')}:</span> <span className="font-medium ml-1 capitalize">{advance.advanceType}</span></div>
+                <div><span className="text-text-secondary">{t('advance.requestDate')}:</span> <span className="font-medium ml-1">{formatDate(advance.documentDate, i18n.language)}</span></div>
+                <div><span className="text-text-secondary">{t('advance.requiredDate')}:</span> <span className="font-medium ml-1">{formatDate(advance.requiredDate, i18n.language)}</span></div>
+                <div><span className="text-text-secondary">{t('advance.advanceReceiver')}:</span> <span className="font-medium ml-1">{getName(advance.cashReceiverId)}</span></div>
+                <div><span className="text-text-secondary">{t('advance.paymentMethod')}:</span> <span className="font-medium ml-1 capitalize">{advance.paymentMethod}</span></div>
+                <div className="col-span-2"><span className="text-text-secondary">{t('advance.purpose')}:</span> <span className="font-medium ml-1">{advance.purpose}</span></div>
+                <div><span className="text-text-secondary">{t('common.amount')}:</span> <span className="font-bold ml-1 text-lg font-mono"><AmountDisplay amount={advance.totalAmount} /></span></div>
+              </div>
+            </div>
+          )}
+
           {/* Expenses */}
           <div className="bg-bg-secondary rounded-lg border border-border p-5">
             <h2 className="text-sm font-semibold text-text-primary mb-4">{t('reconciliation.expenseItems')}</h2>
@@ -162,6 +191,19 @@ export default function ClearAdvanceDetail() {
                 </div>
               </div>
             </div>
+            {/* Bank slip info for surplus */}
+            {isSurplus && (clearRecord.transferRef || (clearRecord.bankSlip && Array.isArray(clearRecord.bankSlip) && clearRecord.bankSlip.length > 0)) && (
+              <div className="mt-4 pt-3 border-t border-border">
+                <h3 className="text-xs font-semibold text-text-secondary mb-2">{t('clearAdvance.bankTransferInfo', 'Bank Transfer Information')}</h3>
+                <div className="grid grid-cols-2 gap-2 text-sm mb-2">
+                  {clearRecord.transferRef && <div><span className="text-text-secondary">{t('clearAdvance.transferRef', 'Ref')}:</span> <span className="font-medium ml-1 font-mono">{clearRecord.transferRef}</span></div>}
+                  {clearRecord.transferDate && <div><span className="text-text-secondary">{t('clearAdvance.transferDate', 'Date')}:</span> <span className="font-medium ml-1">{formatDate(clearRecord.transferDate, i18n.language)}</span></div>}
+                </div>
+                {Array.isArray(clearRecord.bankSlip) && clearRecord.bankSlip.length > 0 && (
+                  <AttachmentList files={clearRecord.bankSlip} readOnly label={t('clearAdvance.bankSlip', 'Bank Slip')} />
+                )}
+              </div>
+            )}
           </div>
         </div>
 

@@ -35,7 +35,9 @@
     "loading": "Loading...",
     "postToSAP": "Post to SAP",
     "postingSAP": "Posting to SAP...",
-    "postedSuccessfully": "Posted to SAP successfully"
+    "postedSuccessfully": "Posted to SAP successfully",
+    "dateFrom": "Date From",
+    "dateTo": "Date To"
   },
   "roles": {
     "employee": "Employee",
@@ -124,17 +126,25 @@
   },
   "clearAdvance": {
     "title": "Clear Advance",
+    "list": "Clear Advances",
     "recordExpenses": "Record Expenses",
     "advanceSummary": "Advance Summary",
+    "advanceInfo": "Advance Request Information",
     "expenseItems": "Expense Items",
     "reviewSubmit": "Review & Submit",
     "settlement": "Settlement",
     "surplus": "Surplus (Return to Company)",
     "deficit": "Deficit (Reimbursement)",
     "exactMatch": "Exact Match",
-    "bankSlip": "Bank Slip",
+    "bankSlip": "Bank Slip / Transfer Receipt",
+    "bankTransferInfo": "Bank Transfer Information",
+    "transferRef": "Transfer Reference No.",
+    "transferDate": "Transfer Date",
     "validate": "Validate",
-    "clear": "Clear"
+    "clear": "Clear",
+    "stepSummary": "Summary",
+    "stepExpenses": "Expenses",
+    "stepReview": "Review"
   },
   "payment": {
     "title": "Payment Request",
@@ -322,6 +332,18 @@
     "rejectedBy": "Rejected by",
     "returnedBy": "Returned by",
     "submittedBy": "Submitted by",
+    "disbursedBy": "Disbursed by",
+    "clearedBy": "Cleared by",
+    "validatedBy": "Validated by",
+    "receivedBy": "Cash received by",
+    "tripApprovedBy": "Trip approved by",
+    "tripEndedBy": "Trip ended by",
+    "hrReviewedBy": "HR reviewed by",
+    "managerApprovedBy": "Expenses approved by",
+    "expenseSubmittedBy": "Expenses submitted by",
+    "accountingVerifiedBy": "Verified by",
+    "postedBy": "Posted to SAP by",
+    "resubmittedBy": "Resubmitted by",
     "comment": "Comment",
     "addComment": "Add Comment",
     "approvalHistory": "Approval History"

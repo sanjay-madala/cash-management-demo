@@ -10,6 +10,16 @@ const actionIcons = {
   returned: CornerDownRight,
   disbursed: Banknote,
   cleared: CheckCircle,
+  validated: Check,
+  received: CheckCircle,
+  tripApproved: Check,
+  tripEnded: CheckCircle,
+  hrReviewed: Check,
+  managerApproved: Check,
+  expenseSubmitted: Send,
+  accountingVerified: Check,
+  posted: CheckCircle,
+  resubmitted: Send,
 };
 
 const actionColors = {
@@ -19,6 +29,16 @@ const actionColors = {
   returned: 'bg-critical text-white',
   disbursed: 'bg-brand text-white',
   cleared: 'bg-positive text-white',
+  validated: 'bg-positive text-white',
+  received: 'bg-positive text-white',
+  tripApproved: 'bg-positive text-white',
+  tripEnded: 'bg-brand text-white',
+  hrReviewed: 'bg-brand text-white',
+  managerApproved: 'bg-positive text-white',
+  expenseSubmitted: 'bg-brand text-white',
+  accountingVerified: 'bg-positive text-white',
+  posted: 'bg-positive text-white',
+  resubmitted: 'bg-brand text-white',
 };
 
 export default function ApprovalTimeline({ approvals = [] }) {

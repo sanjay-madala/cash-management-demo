@@ -77,15 +77,19 @@ export default function ReconciliationDetail() {
       </div>
 
       <div className="space-y-4">
-        {/* Advance Summary */}
+        {/* Advance Request Information */}
         <div className="bg-bg-secondary rounded-lg border border-border p-5">
-          <h2 className="text-sm font-semibold text-text-primary mb-4">{t('reconciliation.advanceAmount')}</h2>
+          <h2 className="text-sm font-semibold text-text-primary mb-4">{t('clearAdvance.advanceInfo', 'Advance Request Information')}</h2>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 text-sm">
             <div><span className="text-text-secondary">{t('advance.requester')}:</span> <span className="font-medium ml-1">{getName(requester)}</span></div>
             <div><span className="text-text-secondary">{t('advance.company')}:</span> <span className="font-medium ml-1">{companyName}</span></div>
             <div><span className="text-text-secondary">{t('advance.advanceType')}:</span> <span className="font-medium ml-1 capitalize">{advance.advanceType}</span></div>
             <div><span className="text-text-secondary">{t('advance.requestDate')}:</span> <span className="font-medium ml-1">{formatDate(advance.documentDate, i18n.language)}</span></div>
             <div><span className="text-text-secondary">{t('advance.requiredDate')}:</span> <span className="font-medium ml-1">{formatDate(advance.requiredDate, i18n.language)}</span></div>
+            {advance.estimateUseDate && <div><span className="text-text-secondary">{t('advance.estimateUseDate', 'Estimate Use Date')}:</span> <span className="font-medium ml-1">{formatDate(advance.estimateUseDate, i18n.language)}</span></div>}
+            <div><span className="text-text-secondary">{t('advance.advanceReceiver')}:</span> <span className="font-medium ml-1">{getName(USERS.find((u) => u.id === advance.cashReceiverId))}</span></div>
+            <div><span className="text-text-secondary">{t('advance.paymentMethod')}:</span> <span className="font-medium ml-1 capitalize">{advance.paymentMethod}</span></div>
+            <div className="col-span-2"><span className="text-text-secondary">{t('advance.purpose')}:</span> <span className="font-medium ml-1">{advance.purpose}</span></div>
             <div><span className="text-text-secondary">{t('common.amount')}:</span> <span className="font-bold ml-1 text-lg font-mono"><AmountDisplay amount={advance.totalAmount} /></span></div>
           </div>
         </div>

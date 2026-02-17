@@ -35,7 +35,9 @@
     "loading": "กำลังโหลด...",
     "postToSAP": "ผ่านรายการไปยัง SAP",
     "postingSAP": "กำลังผ่านรายการไปยัง SAP...",
-    "postedSuccessfully": "ผ่านรายการไปยัง SAP สำเร็จ"
+    "postedSuccessfully": "ผ่านรายการไปยัง SAP สำเร็จ",
+    "dateFrom": "ตั้งแต่วันที่",
+    "dateTo": "ถึงวันที่"
   },
   "roles": {
     "employee": "พนักงาน",
@@ -124,17 +126,25 @@
   },
   "clearAdvance": {
     "title": "เคลียร์เงินทดรอง",
+    "list": "รายการเคลียร์เงินทดรอง",
     "recordExpenses": "บันทึกค่าใช้จ่าย",
     "advanceSummary": "สรุปเงินทดรอง",
+    "advanceInfo": "ข้อมูลใบขอเบิกเงินทดรอง",
     "expenseItems": "รายการค่าใช้จ่าย",
     "reviewSubmit": "ตรวจสอบและส่ง",
     "settlement": "การชำระบัญชี",
     "surplus": "เงินเกิน (คืนบริษัท)",
     "deficit": "เงินขาด (เบิกเพิ่ม)",
     "exactMatch": "พอดี",
-    "bankSlip": "สลิปธนาคาร",
+    "bankSlip": "สลิปธนาคาร / ใบเสร็จการโอน",
+    "bankTransferInfo": "ข้อมูลการโอนเงิน",
+    "transferRef": "เลขที่อ้างอิงการโอน",
+    "transferDate": "วันที่โอนเงิน",
     "validate": "ตรวจสอบ",
-    "clear": "เคลียร์"
+    "clear": "เคลียร์",
+    "stepSummary": "สรุป",
+    "stepExpenses": "ค่าใช้จ่าย",
+    "stepReview": "ตรวจสอบ"
   },
   "payment": {
     "title": "ใบขอชำระเงิน",
@@ -322,6 +332,18 @@
     "rejectedBy": "ปฏิเสธโดย",
     "returnedBy": "ส่งกลับโดย",
     "submittedBy": "ส่งโดย",
+    "disbursedBy": "เบิกจ่ายโดย",
+    "clearedBy": "เคลียร์โดย",
+    "validatedBy": "ตรวจสอบโดย",
+    "receivedBy": "รับเงินโดย",
+    "tripApprovedBy": "อนุมัติการเดินทางโดย",
+    "tripEndedBy": "สิ้นสุดการเดินทางโดย",
+    "hrReviewedBy": "HR ตรวจสอบโดย",
+    "managerApprovedBy": "อนุมัติค่าใช้จ่ายโดย",
+    "expenseSubmittedBy": "ส่งค่าใช้จ่ายโดย",
+    "accountingVerifiedBy": "ตรวจสอบโดยบัญชี",
+    "postedBy": "ผ่านรายการ SAP โดย",
+    "resubmittedBy": "ส่งใหม่โดย",
     "comment": "ความเห็น",
     "addComment": "เพิ่มความเห็น",
     "approvalHistory": "ประวัติการอนุมัติ"

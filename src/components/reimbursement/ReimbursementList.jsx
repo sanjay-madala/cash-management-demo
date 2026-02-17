@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import DataTable from '../common/DataTable.jsx';
 import StatusBadge from '../common/StatusBadge.jsx';
 import AmountDisplay from '../common/AmountDisplay.jsx';
-import SearchFilter from '../common/SearchFilter.jsx';
+
 import { USERS } from '../../data/users.js';
 import { formatDate } from '../../utils/formatters.js';
 import { filterBySearch, filterByStatus } from '../../utils/helpers.js';
@@ -21,6 +21,8 @@ export default function ReimbursementList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const filtered = useMemo(() => {
     let items = state.reimbursements || [];
@@ -28,11 +30,20 @@ export default function ReimbursementList() {
       items = items.filter((r) => r.employeeId === currentUser?.id);
     } else if (currentRole === 'manager') {
       items = items.filter((r) => r.status !== 'draft');
+    } else if (currentRole === 'accounting') {
+      // Accounting only sees trips with manager-approved expenses onward
+      items = items.filter((r) => ['managerApproved', 'paymentGenerated', 'accountingVerified', 'posted'].includes(r.status));
     }
     items = filterByStatus(items, statusFilter);
+    if (dateFrom) {
+      items = items.filter((r) => r.departureDate >= dateFrom);
+    }
+    if (dateTo) {
+      items = items.filter((r) => r.departureDate <= dateTo);
+    }
     items = filterBySearch(items, search, ['docNumber', 'destination']);
     return items;
-  }, [state.reimbursements, search, statusFilter, currentRole, currentUser]);
+  }, [state.reimbursements, search, statusFilter, dateFrom, dateTo, currentRole, currentUser]);
 
   const getUser = (id) => USERS.find((u) => u.id === id);
 
@@ -62,7 +73,29 @@ export default function ReimbursementList() {
         )}
       </div>
 
-      <SearchFilter searchTerm={search} onSearchChange={setSearch} statusFilter={statusFilter} onStatusChange={setStatusFilter} statuses={ALL_STATUSES} />
+      <div className="bg-bg-secondary rounded-lg border border-border p-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-text-secondary mb-1">{t('common.search')}</label>
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Doc# or destination..." className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-bg-primary text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-1 focus:ring-brand" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-text-secondary mb-1">{t('common.status')}</label>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-bg-primary text-text-primary focus:outline-none focus:ring-1 focus:ring-brand">
+              <option value="all">{t('common.all', 'All')}</option>
+              {ALL_STATUSES.map((s) => <option key={s} value={s}>{t(`statuses.${s}`)}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-text-secondary mb-1">{t('common.dateFrom', 'Date From')}</label>
+            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-bg-primary text-text-primary focus:outline-none focus:ring-1 focus:ring-brand" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-text-secondary mb-1">{t('common.dateTo', 'Date To')}</label>
+            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-bg-primary text-text-primary focus:outline-none focus:ring-1 focus:ring-brand" />
+          </div>
+        </div>
+      </div>
       <DataTable columns={columns} data={filtered} onRowClick={(row) => navigate(`/reimbursement/${row.id}`)} />
     </div>
   );
