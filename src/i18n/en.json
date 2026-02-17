@@ -312,7 +312,20 @@
     "attendees": "pax",
     "expenseSummary": "Expense Summary",
     "generatedPayment": "Generated Payment",
-    "viewPayment": "View Payment Request"
+    "viewPayment": "View Payment Request",
+    "startMiles": "Start Miles",
+    "endMiles": "End Miles",
+    "vehicleType": "Vehicle Type",
+    "distance": "Distance (km)",
+    "transportType": "Type",
+    "multiDay": "Multi-day",
+    "oneDay": "1-day",
+    "meals": "Meals",
+    "pricePerMeal": "Price / Meal (THB)",
+    "reference": "Reference No. / Remark",
+    "eMemoFile": "E-memo File",
+    "expenseType": "Expense Type",
+    "requester": "Requester"
   },
   "sap": {
     "documentLog": "SAP Document Log",

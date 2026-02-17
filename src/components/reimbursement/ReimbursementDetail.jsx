@@ -215,7 +215,7 @@ export default function ReimbursementDetail() {
                 )}
                 {record.perdiem && (
                   <div className="flex justify-between border-b border-border pb-2">
-                    <span className="text-text-secondary">{t('reimbursement.perdiem', 'Per Diem')} ({record.perdiem.days} {t('reimbursement.days', 'days')} x {record.perdiem.ratePerDay})</span>
+                    <span className="text-text-secondary">{t('reimbursement.perdiem', 'Per Diem')} ({record.perdiem.meals || record.perdiem.days} {record.perdiem.meals ? t('reimbursement.meals', 'meals') : t('reimbursement.days', 'days')} x {record.perdiem.pricePerMeal || record.perdiem.ratePerDay})</span>
                     <span className="font-mono">{record.perdiem.total?.toLocaleString()}</span>
                   </div>
                 )}

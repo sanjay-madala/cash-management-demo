@@ -312,7 +312,20 @@
     "attendees": "ท่าน",
     "expenseSummary": "สรุปค่าใช้จ่าย",
     "generatedPayment": "ใบชำระเงินที่สร้างอัตโนมัติ",
-    "viewPayment": "ดูใบขอชำระเงิน"
+    "viewPayment": "ดูใบขอชำระเงิน",
+    "startMiles": "เลขไมล์เริ่มต้น",
+    "endMiles": "เลขไมล์สิ้นสุด",
+    "vehicleType": "ประเภทรถ",
+    "distance": "ระยะทาง (กม.)",
+    "transportType": "ประเภท",
+    "multiDay": "หลายวัน",
+    "oneDay": "1 วัน",
+    "meals": "มื้ออาหาร",
+    "pricePerMeal": "ราคา / มื้อ (บาท)",
+    "reference": "เลขที่อ้างอิง / หมายเหตุ",
+    "eMemoFile": "ไฟล์ E-memo",
+    "expenseType": "ประเภทค่าใช้จ่าย",
+    "requester": "ผู้ขอ"
   },
   "sap": {
     "documentLog": "บันทึกเอกสาร SAP",
