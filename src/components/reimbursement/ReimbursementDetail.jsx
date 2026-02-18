@@ -166,14 +166,20 @@ export default function ReimbursementDetail() {
             </>
           )}
           {canManagerApproveExpenses && (
-            <button onClick={handleManagerApproveExpenses} className="px-4 py-2 text-sm font-medium bg-positive text-white rounded-lg hover:bg-positive/90 transition-colors">
-              {t('reimbursement.approveExpenses', 'Approve Expenses')}
-            </button>
+            <>
+              <button onClick={handleManagerApproveExpenses} className="px-4 py-2 text-sm font-medium bg-positive text-white rounded-lg hover:bg-positive/90 transition-colors">
+                {t('reimbursement.approveExpenses', 'Approve Expenses')}
+              </button>
+              <button onClick={() => setRejectModalOpen(true)} className="px-4 py-2 text-sm font-medium bg-negative text-white rounded-lg hover:bg-negative/90 transition-colors">{t('common.reject')}</button>
+            </>
           )}
           {canAccountingVerify && (
-            <button onClick={handleAccountingVerify} className="px-4 py-2 text-sm font-medium bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors">
-              {t('reimbursement.verify', 'Verify')}
-            </button>
+            <>
+              <button onClick={handleAccountingVerify} className="px-4 py-2 text-sm font-medium bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors">
+                {t('reimbursement.verify', 'Verify')}
+              </button>
+              <button onClick={() => setRejectModalOpen(true)} className="px-4 py-2 text-sm font-medium bg-negative text-white rounded-lg hover:bg-negative/90 transition-colors">{t('common.reject')}</button>
+            </>
           )}
           {canPostSAP && (
             <button onClick={handlePostSAP} disabled={posting} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors disabled:opacity-50">

@@ -145,7 +145,8 @@
     "clear": "Clear",
     "stepSummary": "Summary",
     "stepExpenses": "Expenses",
-    "stepReview": "Review"
+    "stepReview": "Review",
+    "status": "Clear Advance Status"
   },
   "payment": {
     "title": "Payment Request",

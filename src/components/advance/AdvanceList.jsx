@@ -40,6 +40,27 @@ export default function AdvanceList() {
   const getUser = (id) => USERS.find((u) => u.id === id);
   const getCompany = (id) => COMPANIES.find((c) => c.id === id);
 
+  // Get clear advance status for each advance
+  const getClearAdvanceStatus = (advanceId) => {
+    const clears = (state.clearAdvances || []).filter((c) => c.advanceId === advanceId);
+    if (clears.length === 0) return null;
+    // Return the latest clear advance
+    return clears[clears.length - 1];
+  };
+
+  const getClearStatusLabel = (clearRecord) => {
+    if (!clearRecord) return '-';
+    // For manager: submitted shows as "Pending Approval"
+    // For accounting: approved shows as "Pending Approval"
+    if (currentRole === 'manager' && clearRecord.status === 'submitted') {
+      return <StatusBadge status="pendingApproval" />;
+    }
+    if (currentRole === 'accounting' && clearRecord.status === 'approved') {
+      return <StatusBadge status="pendingApproval" />;
+    }
+    return <StatusBadge status={clearRecord.status} />;
+  };
+
   const columns = [
     { key: 'docNumber', label: t('advance.docNumber'), render: (row) => <span className="font-medium text-brand">{row.docNumber}</span> },
     {
@@ -60,6 +81,10 @@ export default function AdvanceList() {
     { key: 'totalAmount', label: t('common.amount'), render: (row) => <AmountDisplay amount={row.totalAmount} />, cellClassName: 'text-right' },
     { key: 'documentDate', label: t('common.date'), render: (row) => formatDate(row.documentDate, i18n.language) },
     { key: 'status', label: t('common.status'), render: (row) => <StatusBadge status={row.status} /> },
+    { key: 'clearStatus', label: t('clearAdvance.status', 'Clear Advance Status'), render: (row) => {
+      const clearRecord = getClearAdvanceStatus(row.id);
+      return clearRecord ? getClearStatusLabel(clearRecord) : <span className="text-text-secondary text-xs">-</span>;
+    }},
   ];
 
   return (

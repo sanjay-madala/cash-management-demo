@@ -145,7 +145,8 @@
     "clear": "เคลียร์",
     "stepSummary": "สรุป",
     "stepExpenses": "ค่าใช้จ่าย",
-    "stepReview": "ตรวจสอบ"
+    "stepReview": "ตรวจสอบ",
+    "status": "สถานะเคลียร์เงินทดรอง"
   },
   "payment": {
     "title": "ใบขอชำระเงิน",

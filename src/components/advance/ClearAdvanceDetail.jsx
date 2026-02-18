@@ -95,14 +95,20 @@ export default function ClearAdvanceDetail() {
             </>
           )}
           {canValidate && (
-            <button onClick={() => handleAction('validated', 'validated')} className="px-4 py-2 text-sm font-medium bg-brand text-white rounded-lg hover:bg-brand-hover">
-              {t('clearAdvance.validate', 'Validate')}
-            </button>
+            <>
+              <button onClick={() => handleAction('validated', 'validated')} className="px-4 py-2 text-sm font-medium bg-brand text-white rounded-lg hover:bg-brand-hover">
+                {t('clearAdvance.validate', 'Validate')}
+              </button>
+              <button onClick={handleReject} className="px-4 py-2 text-sm font-medium bg-negative text-white rounded-lg hover:bg-negative/90">{t('common.reject')}</button>
+            </>
           )}
           {canClear && (
-            <button onClick={() => handleAction('cleared', 'cleared')} className="px-4 py-2 text-sm font-medium bg-positive text-white rounded-lg hover:bg-positive/90">
-              {t('reconciliation.clearAdvance')}
-            </button>
+            <>
+              <button onClick={() => handleAction('cleared', 'cleared')} className="px-4 py-2 text-sm font-medium bg-positive text-white rounded-lg hover:bg-positive/90">
+                {t('reconciliation.clearAdvance')}
+              </button>
+              <button onClick={handleReject} className="px-4 py-2 text-sm font-medium bg-negative text-white rounded-lg hover:bg-negative/90">{t('common.reject')}</button>
+            </>
           )}
         </div>
       </div>
