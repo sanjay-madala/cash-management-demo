@@ -108,7 +108,7 @@ export const USERS = [
     department: 'dept-5',
     position: 'HR Officer',
     company: 'comp-4',
-    role: 'employee',
+    role: 'hr',
     avatar: 'AP',
   },
   {

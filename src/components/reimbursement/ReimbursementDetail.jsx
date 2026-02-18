@@ -52,7 +52,7 @@ export default function ReimbursementDetail() {
   const canEndTrip = isOwner && record.status === 'tripApproved';
   const canRecordExpenses = isOwner && (record.status === 'tripEnded' || record.status === 'tripApproved');
   const canApproveTrip = currentRole === 'manager' && record.status === 'pendingApproval';
-  const canHRReview = currentRole === 'manager' && record.status === 'expenseSubmitted';
+  const canHRReview = currentRole === 'hr' && record.status === 'expenseSubmitted';
   const canManagerApproveExpenses = currentRole === 'manager' && record.status === 'hrReviewed';
   const canAccountingVerify = currentRole === 'accounting' && record.status === 'paymentGenerated';
   const canPostSAP = currentRole === 'accounting' && record.status === 'accountingVerified';

@@ -32,6 +32,9 @@ export default function ReimbursementList() {
       items = items.filter((r) => r.employeeId === currentUser?.id);
     } else if (currentRole === 'manager') {
       items = items.filter((r) => r.status !== 'draft');
+    } else if (currentRole === 'hr') {
+      // HR sees trips with submitted expenses for review
+      items = items.filter((r) => ['expenseSubmitted', 'hrReviewed', 'managerApproved', 'paymentGenerated', 'accountingVerified', 'posted'].includes(r.status));
     } else if (currentRole === 'accounting') {
       // Accounting only sees trips with manager-approved expenses onward
       items = items.filter((r) => ['managerApproved', 'paymentGenerated', 'accountingVerified', 'posted'].includes(r.status));

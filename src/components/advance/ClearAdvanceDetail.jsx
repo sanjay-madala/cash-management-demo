@@ -14,14 +14,14 @@ import { formatDate } from '../../utils/formatters.js';
 
 export default function ClearAdvanceDetail() {
   const { t, i18n } = useTranslation();
-  const { id, clearId } = useParams();
+  const { advanceId, clearId } = useParams();
   const navigate = useNavigate();
   const { state, dispatch, getRecordById } = useData();
   const { currentUser, currentRole } = useAuth();
   const { addToast } = useToast();
 
   const clearRecord = state.clearAdvances?.find((c) => c.id === clearId);
-  const advance = getRecordById('advance', id);
+  const advance = getRecordById('advance', advanceId);
 
   const getName = (userId) => {
     const user = USERS.find((u) => u.id === userId);
@@ -53,7 +53,7 @@ export default function ClearAdvanceDetail() {
       },
     });
     if (newStatus === 'cleared') {
-      dispatch({ type: 'UPDATE_STATUS', module: 'advance', id, status: 'cleared' });
+      dispatch({ type: 'UPDATE_STATUS', module: 'advance', id: advanceId, status: 'cleared' });
     }
     addToast(t(`toast.clearAdvance${action.charAt(0).toUpperCase() + action.slice(1)}`, `Clear advance ${action}`), 'success');
   };
@@ -78,7 +78,7 @@ export default function ClearAdvanceDetail() {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(`/advance/${id}`)} className="p-1.5 hover:bg-bg-primary rounded-lg transition-colors">
+        <button onClick={() => navigate(`/advance/${advanceId}`)} className="p-1.5 hover:bg-bg-primary rounded-lg transition-colors">
           <ArrowLeft size={20} className="text-text-secondary" />
         </button>
         <div className="flex-1">

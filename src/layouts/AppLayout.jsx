@@ -21,7 +21,7 @@ const navItems = [
   { path: '/', icon: LayoutDashboard, labelKey: 'nav.dashboard' },
   { path: '/advance', icon: Banknote, labelKey: 'nav.advanceRequisition' },
   { path: '/payment', icon: CreditCard, labelKey: 'nav.paymentRequest' },
-  { path: '/expense', icon: Receipt, labelKey: 'nav.expenseSystem' },
+  // { path: '/expense', icon: Receipt, labelKey: 'nav.expenseSystem' },
   // { path: '/petty-cash', icon: Coins, labelKey: 'nav.pettyCash' },
   { path: '/reimbursement', icon: Plane, labelKey: 'nav.reimbursement' },
   { path: '/reconciliation', icon: Scale, labelKey: 'nav.reconciliation', accountingOnly: true },
@@ -100,7 +100,7 @@ export default function AppLayout() {
                   onClick={() => setRoleDropdownOpen(false)}
                 />
                 <div className="absolute right-0 top-full mt-1 w-36 bg-bg-secondary border border-border rounded-lg shadow-lg z-50 py-1">
-                  {['employee', 'manager', 'accounting'].map((role) => (
+                  {['employee', 'manager', 'hr', 'accounting'].map((role) => (
                     <button
                       key={role}
                       onClick={() => handleRoleSwitch(role)}

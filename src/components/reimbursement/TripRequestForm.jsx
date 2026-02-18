@@ -1,12 +1,66 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Search, X } from 'lucide-react';
 import { useData } from '../../context/DataContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { USERS } from '../../data/users.js';
 import { COMPANIES, DEPARTMENTS, COST_CENTERS, TRAVEL_TYPES } from '../../data/constants.js';
+
+function FellowTravelerSearch({ users, getName, onSelect, t }) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = users.filter((u) => {
+    if (!query.trim()) return true;
+    const q = query.toLowerCase();
+    return getName(u).toLowerCase().includes(q) || u.position?.toLowerCase().includes(q);
+  });
+
+  return (
+    <div ref={ref} className="relative">
+      <div className="flex items-center gap-2 px-3 py-2 text-sm border border-border rounded-lg bg-bg-primary focus-within:ring-1 focus-within:ring-brand">
+        <Search size={14} className="text-text-secondary shrink-0" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+          placeholder={t('reimbursement.searchTravelers', 'Search and add travelers...')}
+          className="flex-1 bg-transparent outline-none text-text-primary placeholder:text-text-secondary/50"
+        />
+      </div>
+      {open && filtered.length > 0 && (
+        <div className="absolute z-20 mt-1 w-full max-h-48 overflow-auto bg-bg-secondary border border-border rounded-lg shadow-lg">
+          {filtered.map((u) => (
+            <button
+              key={u.id}
+              type="button"
+              onClick={() => { onSelect(u.id); setQuery(''); }}
+              className="w-full text-left px-3 py-2 text-sm hover:bg-bg-primary transition-colors flex items-center justify-between"
+            >
+              <span>{getName(u)}</span>
+              <span className="text-xs text-text-secondary">{u.position}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {open && filtered.length === 0 && query.trim() && (
+        <div className="absolute z-20 mt-1 w-full bg-bg-secondary border border-border rounded-lg shadow-lg p-3 text-sm text-text-secondary text-center">
+          {t('common.noData')}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function TripRequestForm() {
   const { t, i18n } = useTranslation();
@@ -186,22 +240,27 @@ export default function TripRequestForm() {
         {/* Fellow Travelers */}
         <div className="bg-bg-secondary rounded-lg border border-border p-5">
           <h2 className="text-sm font-semibold text-text-primary mb-4">{t('reimbursement.fellowTravelers', 'Fellow Travelers')}</h2>
-          <div className="flex flex-wrap gap-2">
-            {USERS.filter((u) => u.id !== form.employeeId).map((u) => (
-              <button
-                key={u.id}
-                type="button"
-                onClick={() => toggleTraveler(u.id)}
-                className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
-                  form.fellowTravelers.includes(u.id)
-                    ? 'bg-brand text-white border-brand'
-                    : 'bg-bg-primary text-text-secondary border-border hover:border-brand'
-                }`}
-              >
-                {getName(u)}
-              </button>
-            ))}
-          </div>
+          {/* Selected travelers as tags */}
+          {form.fellowTravelers.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {form.fellowTravelers.map((uid) => {
+                const u = USERS.find((usr) => usr.id === uid);
+                return (
+                  <span key={uid} className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand/10 text-brand text-xs font-medium rounded-full">
+                    {u ? getName(u) : uid}
+                    <button type="button" onClick={() => toggleTraveler(uid)} className="hover:text-negative ml-0.5"><X size={12} /></button>
+                  </span>
+                );
+              })}
+            </div>
+          )}
+          {/* Searchable dropdown */}
+          <FellowTravelerSearch
+            users={USERS.filter((u) => u.id !== form.employeeId && !form.fellowTravelers.includes(u.id))}
+            getName={getName}
+            onSelect={(uid) => toggleTraveler(uid)}
+            t={t}
+          />
         </div>
 
         {/* Remark */}

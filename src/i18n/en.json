@@ -42,6 +42,7 @@
   "roles": {
     "employee": "Employee",
     "manager": "Manager",
+    "hr": "HR",
     "accounting": "Accounting"
   },
   "statuses": {

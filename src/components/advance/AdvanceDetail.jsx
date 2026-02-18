@@ -27,6 +27,7 @@ export default function AdvanceDetail() {
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectComment, setRejectComment] = useState('');
   const [posting, setPosting] = useState(false);
+  const [activeTab, setActiveTab] = useState('details');
 
   const record = getRecordById('advance', id);
   const sapDoc = getSAPDocument(id);
@@ -177,9 +178,29 @@ export default function AdvanceDetail() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 mb-4 border-b border-border">
+        <button
+          onClick={() => setActiveTab('details')}
+          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === 'details' ? 'border-brand text-brand' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+        >
+          {t('advance.details', 'Details')}
+        </button>
+        <button
+          onClick={() => setActiveTab('clearAdvances')}
+          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'clearAdvances' ? 'border-brand text-brand' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+        >
+          {t('clearAdvance.list', 'Clear Advances')}
+          {clearAdvances.length > 0 && (
+            <span className={`text-xs font-bold rounded-full px-1.5 py-0.5 ${activeTab === 'clearAdvances' ? 'bg-brand text-white' : 'bg-brand/10 text-brand'}`}>{clearAdvances.length}</span>
+          )}
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Main Info */}
         <div className="lg:col-span-2 space-y-4">
+          {activeTab === 'details' && <>
           <div className="bg-bg-secondary rounded-lg border border-border p-5">
             <h2 className="text-sm font-semibold text-text-primary mb-4">Details</h2>
             <div className="grid grid-cols-2 gap-y-3 gap-x-6 text-sm">
@@ -268,40 +289,55 @@ export default function AdvanceDetail() {
             </div>
           )}
 
-          {/* Clear Advances */}
-          {clearAdvances.length > 0 && (
+          </>}
+
+          {/* Clear Advances Tab */}
+          {activeTab === 'clearAdvances' && (
             <div className="bg-bg-secondary rounded-lg border border-border p-5">
-              <h2 className="text-sm font-semibold text-text-primary mb-4">{t('clearAdvance.list', 'Clear Advances')}</h2>
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left text-xs font-semibold text-text-secondary py-2">{t('advance.docNumber')}</th>
-                    <th className="text-right text-xs font-semibold text-text-secondary py-2">{t('reconciliation.totalExpenses')}</th>
-                    <th className="text-right text-xs font-semibold text-text-secondary py-2">{t('reconciliation.settlement')}</th>
-                    <th className="text-left text-xs font-semibold text-text-secondary py-2">{t('common.status')}</th>
-                    <th className="text-left text-xs font-semibold text-text-secondary py-2">{t('common.date')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {clearAdvances.map((clr) => (
-                    <tr
-                      key={clr.id}
-                      className="border-b border-border hover:bg-bg-primary cursor-pointer transition-colors"
-                      onClick={() => navigate(`/advance/${id}/clear/${clr.id}`)}
-                    >
-                      <td className="py-2.5 text-sm font-medium text-brand">{clr.advanceDocNumber}</td>
-                      <td className="py-2.5 text-sm text-right font-mono"><AmountDisplay amount={clr.totalExpenses} /></td>
-                      <td className="py-2.5 text-sm text-right font-mono">
-                        <span className={clr.settlementType === 'surplus' ? 'text-positive' : clr.settlementType === 'deficit' ? 'text-negative' : ''}>
-                          {clr.settlementType === 'surplus' ? '+' : clr.settlementType === 'deficit' ? '-' : ''}{clr.settlement?.toLocaleString()}
-                        </span>
-                      </td>
-                      <td className="py-2.5"><StatusBadge status={clr.status} /></td>
-                      <td className="py-2.5 text-sm text-text-secondary">{formatDate(clr.createdDate, i18n.language)}</td>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold text-text-primary">{t('clearAdvance.list', 'Clear Advances')}</h2>
+                {canClearAdvance && (
+                  <button onClick={() => navigate(`/advance/${id}/clear`)} className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand border border-brand rounded-lg hover:bg-brand/5 transition-colors">
+                    + {t('reconciliation.clearAdvance', 'Clear Advance')}
+                  </button>
+                )}
+              </div>
+              {clearAdvances.length > 0 ? (
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left text-xs font-semibold text-text-secondary py-2">{t('advance.docNumber')}</th>
+                      <th className="text-right text-xs font-semibold text-text-secondary py-2">{t('reconciliation.advanceAmount')}</th>
+                      <th className="text-right text-xs font-semibold text-text-secondary py-2">{t('reconciliation.totalExpenses')}</th>
+                      <th className="text-right text-xs font-semibold text-text-secondary py-2">{t('reconciliation.settlement')}</th>
+                      <th className="text-left text-xs font-semibold text-text-secondary py-2">{t('common.status')}</th>
+                      <th className="text-left text-xs font-semibold text-text-secondary py-2">{t('common.date')}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {clearAdvances.map((clr) => (
+                      <tr
+                        key={clr.id}
+                        className="border-b border-border hover:bg-bg-primary cursor-pointer transition-colors"
+                        onClick={() => navigate(`/advance/${id}/clear/${clr.id}`)}
+                      >
+                        <td className="py-2.5 text-sm font-medium text-brand">{clr.advanceDocNumber}</td>
+                        <td className="py-2.5 text-sm text-right font-mono"><AmountDisplay amount={clr.advanceAmount} /></td>
+                        <td className="py-2.5 text-sm text-right font-mono"><AmountDisplay amount={clr.totalExpenses} /></td>
+                        <td className="py-2.5 text-sm text-right font-mono">
+                          <span className={clr.settlementType === 'surplus' ? 'text-positive' : clr.settlementType === 'deficit' ? 'text-negative' : ''}>
+                            {clr.settlementType === 'surplus' ? '+' : clr.settlementType === 'deficit' ? '-' : ''}{clr.settlement?.toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="py-2.5"><StatusBadge status={clr.status} /></td>
+                        <td className="py-2.5 text-sm text-text-secondary">{formatDate(clr.createdDate, i18n.language)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-sm text-text-secondary text-center py-8">{t('common.noData')}</p>
+              )}
             </div>
           )}
         </div>
